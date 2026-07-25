@@ -111,5 +111,11 @@ async function replaceMatchesCollection(matches) {
 }
 
 const matches = await fetchUpcomingMatches();
+
+if (matches.length === 0) {
+  console.warn('PandaScore devolvió 0 partidos — no se toca Firestore, probablemente un hipo transitorio de la API.');
+  process.exit(0);
+}
+
 await replaceMatchesCollection(matches);
 console.log(`Sincronizados ${matches.length} partidos.`);

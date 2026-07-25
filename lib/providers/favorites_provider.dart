@@ -19,10 +19,13 @@ class FavoritesNotifier extends StreamNotifier<Set<String>> {
     final code = ref.read(groupCodeProvider);
     if (code == null) return;
 
-    final current = Set<String>.from(state.value ?? const {});
-    if (!current.remove(teamId)) current.add(teamId);
-    state = AsyncData(current);
-    await ref.read(groupRepositoryProvider).updateFavorites(code, current);
+    final isFavorite = state.value?.contains(teamId) ?? false;
+    final repo = ref.read(groupRepositoryProvider);
+    if (isFavorite) {
+      await repo.removeFavorite(code, teamId);
+    } else {
+      await repo.addFavorite(code, teamId);
+    }
   }
 }
 

@@ -32,8 +32,16 @@ class GroupRepository {
     return _doc(code).snapshots().map((snapshot) => snapshot.data() ?? {});
   }
 
-  Future<void> updateFavorites(String code, Set<String> teamIds) {
-    return _doc(code).update({'favoriteTeamIds': teamIds.toList()});
+  Future<void> addFavorite(String code, String teamId) {
+    return _doc(code).update({
+      'favoriteTeamIds': FieldValue.arrayUnion([teamId]),
+    });
+  }
+
+  Future<void> removeFavorite(String code, String teamId) {
+    return _doc(code).update({
+      'favoriteTeamIds': FieldValue.arrayRemove([teamId]),
+    });
   }
 
   Future<void> updateLeadMinutes(String code, int minutes) {
