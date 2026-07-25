@@ -1,23 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../services/favorites_store.dart';
+import 'group_provider.dart';
 
-class FavoritesNotifier extends AsyncNotifier<Set<String>> {
-  final _store = FavoritesStore();
-
+class FavoritesNotifier extends StreamNotifier<Set<String>> {
   @override
-  Future<Set<String>> build() => _store.load();
+  Stream<Set<String>> build() {
+    final code = ref.watch(groupCodeProvider);
+    if (code == null) return Stream.value(<String>{});
+
+    final repo = ref.read(groupRepositoryProvider);
+    return repo.watchGroup(code).map((data) {
+      final ids = data['favoriteTeamIds'] as List<dynamic>? ?? [];
+      return ids.map((e) => e.toString()).toSet();
+    });
+  }
 
   Future<void> toggle(String teamId) async {
+    final code = ref.read(groupCodeProvider);
+    if (code == null) return;
+
     final current = Set<String>.from(state.value ?? const {});
     if (!current.remove(teamId)) current.add(teamId);
     state = AsyncData(current);
-    await _store.save(current);
+    await ref.read(groupRepositoryProvider).updateFavorites(code, current);
   }
-
-  bool isFavorite(String teamId) => state.value?.contains(teamId) ?? false;
 }
 
-final favoritesProvider = AsyncNotifierProvider<FavoritesNotifier, Set<String>>(
+final favoritesProvider = StreamNotifierProvider<FavoritesNotifier, Set<String>>(
   FavoritesNotifier.new,
 );

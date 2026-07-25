@@ -1,22 +1,36 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'firebase_options.dart';
+import 'providers/group_provider.dart';
 import 'router.dart';
+import 'services/auth_service.dart';
+import 'services/group_store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('es');
-  await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const ProviderScope(child: DotaScheduleApp()));
+  await AuthService().ensureSignedIn();
+
+  final groupCode = await GroupStore().loadCode();
+  final router = buildAppRouter(initialLocation: groupCode == null ? '/link' : '/calendar');
+
+  runApp(
+    ProviderScope(
+      overrides: [groupCodeProvider.overrideWith((ref) => groupCode)],
+      child: DotaScheduleApp(router: router),
+    ),
+  );
 }
 
 class DotaScheduleApp extends StatelessWidget {
-  const DotaScheduleApp({super.key});
+  const DotaScheduleApp({super.key, required this.router});
+
+  final GoRouter router;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +41,7 @@ class DotaScheduleApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB22222)),
         useMaterial3: true,
       ),
-      routerConfig: appRouter,
+      routerConfig: router,
     );
   }
 }

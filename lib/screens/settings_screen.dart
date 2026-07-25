@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../providers/group_provider.dart';
 import '../providers/settings_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -18,6 +20,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final leadAsync = ref.watch(notificationLeadProvider);
     final notifier = ref.read(notificationLeadProvider.notifier);
+    final groupCode = ref.watch(groupCodeProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Ajustes')),
@@ -27,12 +30,26 @@ class SettingsScreen extends ConsumerWidget {
         data: (currentMinutes) => ListView(
           padding: const EdgeInsets.all(12),
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                'Avisarme con anticipación',
-                style: Theme.of(context).textTheme.titleMedium,
+            if (groupCode != null)
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.link),
+                  title: Text('Tu código de vinculación: $groupCode'),
+                  subtitle: const Text('Usalo para sincronizar otro dispositivo'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.copy),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: groupCode));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Código copiado')),
+                      );
+                    },
+                  ),
+                ),
               ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text('Avisarme con anticipación'),
             ),
             RadioGroup<int>(
               groupValue: currentMinutes,

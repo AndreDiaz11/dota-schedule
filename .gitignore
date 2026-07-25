@@ -46,3 +46,6 @@ app.*.map.json
 
 # Secretos locales
 .env
+
+# Node (scripts/)
+node_modules/
