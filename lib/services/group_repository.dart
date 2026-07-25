@@ -47,4 +47,10 @@ class GroupRepository {
   Future<void> updateLeadMinutes(String code, int minutes) {
     return _doc(code).update({'notificationLeadMinutes': minutes});
   }
+
+  Future<void> addFcmToken(String code, String token) {
+    return _doc(code).update({
+      'fcmTokens': FieldValue.arrayUnion([token]),
+    });
+  }
 }

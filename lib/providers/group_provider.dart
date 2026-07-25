@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../services/auth_service.dart';
 import '../services/group_repository.dart';
 import '../services/group_store.dart';
+import '../services/push_service.dart';
 
 final groupCodeProvider = StateProvider<String?>((ref) => null);
 
@@ -12,3 +13,5 @@ final groupRepositoryProvider = Provider<GroupRepository>((ref) => GroupReposito
 final groupStoreProvider = Provider<GroupStore>((ref) => GroupStore());
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
+
+final pushServiceProvider = Provider<PushService>((ref) => PushService());

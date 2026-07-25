@@ -35,6 +35,7 @@ class _LinkScreenState extends ConsumerState<LinkScreen> {
       await repo.createGroup(code);
       await ref.read(groupStoreProvider).saveCode(code);
       ref.read(groupCodeProvider.notifier).state = code;
+      await ref.read(pushServiceProvider).registerToken(code, repo);
       setState(() => _generatedCode = code);
     } catch (e) {
       setState(() => _error = 'No se pudo crear el código: $e');
@@ -63,6 +64,7 @@ class _LinkScreenState extends ConsumerState<LinkScreen> {
       }
       await ref.read(groupStoreProvider).saveCode(code);
       ref.read(groupCodeProvider.notifier).state = code;
+      await ref.read(pushServiceProvider).registerToken(code, repo);
       if (mounted) context.go('/calendar');
     } catch (e) {
       setState(() => _error = 'No se pudo vincular: $e');

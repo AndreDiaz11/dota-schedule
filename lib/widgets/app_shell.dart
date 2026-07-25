@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../providers/reminder_provider.dart';
 import '../providers/update_provider.dart';
 
 class AppShell extends ConsumerWidget {
@@ -14,6 +15,7 @@ class AppShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(matchReminderCheckerProvider);
     final updateAsync = ref.watch(updateCheckProvider);
     final update = updateAsync.value;
     final dismissed = ref.watch(updateBannerDismissedProvider);
