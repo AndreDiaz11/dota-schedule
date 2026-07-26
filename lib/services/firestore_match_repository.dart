@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../models/h2h_result.dart';
 import '../models/match_model.dart';
 import '../models/team.dart';
 import '../models/tournament.dart';
@@ -48,9 +49,33 @@ class FirestoreMatchRepository implements MatchRepository {
           (b) => b.name == data['bestOf'],
           orElse: () => BestOf.bo1,
         ),
+        status: MatchStatus.values.firstWhere(
+          (s) => s.name == data['status'],
+          orElse: () => MatchStatus.upcoming,
+        ),
+        headToHead: _parseHeadToHead(data['headToHead']),
       );
     } catch (_) {
       return null;
     }
+  }
+
+  List<H2HResult> _parseHeadToHead(dynamic raw) {
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Map<String, dynamic>>()
+        .map((entry) {
+          final date = entry['dateUtc'];
+          if (date is! Timestamp) return null;
+          return H2HResult(
+            dateUtc: date.toDate().toUtc(),
+            tournamentName: entry['tournamentName'] as String? ?? 'Torneo',
+            teamAScore: (entry['teamAScore'] as num?)?.toInt() ?? 0,
+            teamBScore: (entry['teamBScore'] as num?)?.toInt() ?? 0,
+            winnerId: entry['winnerId'] as String?,
+          );
+        })
+        .whereType<H2HResult>()
+        .toList();
   }
 }

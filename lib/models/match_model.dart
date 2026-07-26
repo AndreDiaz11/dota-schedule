@@ -1,7 +1,10 @@
+import 'h2h_result.dart';
 import 'team.dart';
 import 'tournament.dart';
 
 enum BestOf { bo1, bo2, bo3, bo5 }
+
+enum MatchStatus { upcoming, running }
 
 class MatchModel {
   final String id;
@@ -10,6 +13,8 @@ class MatchModel {
   final Team teamB;
   final DateTime startTimeUtc;
   final BestOf bestOf;
+  final MatchStatus status;
+  final List<H2HResult> headToHead;
 
   const MatchModel({
     required this.id,
@@ -18,9 +23,13 @@ class MatchModel {
     required this.teamB,
     required this.startTimeUtc,
     required this.bestOf,
+    this.status = MatchStatus.upcoming,
+    this.headToHead = const [],
   });
 
   DateTime get startTimeLocal => startTimeUtc.toLocal();
+
+  bool get isLive => status == MatchStatus.running;
 
   bool involvesTeam(String teamId) => teamA.id == teamId || teamB.id == teamId;
 
@@ -35,6 +44,10 @@ class MatchModel {
         (b) => b.name == json['bestOf'],
         orElse: () => BestOf.bo1,
       ),
+      status: MatchStatus.values.firstWhere(
+        (s) => s.name == json['status'],
+        orElse: () => MatchStatus.upcoming,
+      ),
     );
   }
 
@@ -45,5 +58,6 @@ class MatchModel {
         'teamB': teamB.toJson(),
         'startTimeUtc': startTimeUtc.toIso8601String(),
         'bestOf': bestOf.name,
+        'status': status.name,
       };
 }

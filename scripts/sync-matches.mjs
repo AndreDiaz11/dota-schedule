@@ -29,6 +29,8 @@ const REGION_BY_COUNTRY = {
   PH: 'sea', ID: 'sea', MY: 'sea', TH: 'sea', VN: 'sea', SG: 'sea', MM: 'sea',
 };
 
+const MAX_H2H_ENTRIES = 5;
+
 function mapTier(tier) {
   return TIER_MAP[tier] ?? 'amateur';
 }
@@ -51,13 +53,18 @@ function parseTeam(json) {
   };
 }
 
-function parseMatch(raw) {
+function parseOpponents(raw) {
   const opponents = raw.opponents ?? [];
   if (opponents.length < 2) return null;
-
   const teamAJson = opponents[0]?.opponent;
   const teamBJson = opponents[1]?.opponent;
   if (!teamAJson || !teamBJson) return null;
+  return { teamAJson, teamBJson };
+}
+
+function parseMatch(raw, status) {
+  const parsedOpponents = parseOpponents(raw);
+  if (!parsedOpponents) return null;
 
   const scheduledAt = raw.scheduled_at ?? raw.begin_at;
   if (!scheduledAt) return null;
@@ -70,24 +77,82 @@ function parseMatch(raw) {
     tournamentId: String(league?.id ?? tournament?.id ?? raw.id),
     tournamentName: league?.name ?? tournament?.name ?? 'Torneo',
     tier: mapTier(tournament?.tier),
-    teamA: parseTeam(teamAJson),
-    teamB: parseTeam(teamBJson),
+    teamA: parseTeam(parsedOpponents.teamAJson),
+    teamB: parseTeam(parsedOpponents.teamBJson),
     startTimeUtc: Timestamp.fromDate(new Date(scheduledAt)),
     bestOf: mapBestOf(raw.number_of_games),
+    status,
     updatedAt: Timestamp.now(),
   };
 }
 
-async function fetchUpcomingMatches() {
+function parsePastMatch(raw) {
+  const parsedOpponents = parseOpponents(raw);
+  if (!parsedOpponents) return null;
+  const endAt = raw.end_at ?? raw.scheduled_at ?? raw.begin_at;
+  if (!endAt || !raw.results || raw.results.length < 2) return null;
+
+  const teamAId = String(parsedOpponents.teamAJson.id);
+  const teamBId = String(parsedOpponents.teamBJson.id);
+  const scoreFor = (teamId) => raw.results.find((r) => String(r.team_id) === teamId)?.score ?? 0;
+
+  return {
+    teamAId,
+    teamBId,
+    teamAScore: scoreFor(teamAId),
+    teamBScore: scoreFor(teamBId),
+    winnerId: raw.winner_id != null ? String(raw.winner_id) : null,
+    tournamentName: raw.league?.name ?? raw.tournament?.name ?? 'Torneo',
+    dateUtc: new Date(endAt),
+  };
+}
+
+function buildHeadToHead(match, pastMatches) {
+  const encounters = pastMatches
+    .filter(
+      (p) =>
+        (p.teamAId === match.teamA.id && p.teamBId === match.teamB.id) ||
+        (p.teamAId === match.teamB.id && p.teamBId === match.teamA.id),
+    )
+    .sort((a, b) => b.dateUtc - a.dateUtc)
+    .slice(0, MAX_H2H_ENTRIES)
+    .map((p) => {
+      const sameOrder = p.teamAId === match.teamA.id;
+      return {
+        dateUtc: Timestamp.fromDate(p.dateUtc),
+        tournamentName: p.tournamentName,
+        teamAScore: sameOrder ? p.teamAScore : p.teamBScore,
+        teamBScore: sameOrder ? p.teamBScore : p.teamAScore,
+        winnerId: p.winnerId,
+      };
+    });
+
+  return encounters;
+}
+
+async function fetchMatches(endpoint, status) {
   const response = await fetch(
-    'https://api.pandascore.co/dota2/matches/upcoming?per_page=100&sort=begin_at',
+    `https://api.pandascore.co/dota2/matches/${endpoint}?per_page=100&sort=begin_at`,
     { headers: { Authorization: `Bearer ${PANDASCORE_API_KEY}` } },
   );
   if (!response.ok) {
-    throw new Error(`PandaScore respondió ${response.status}: ${await response.text()}`);
+    throw new Error(`PandaScore respondió ${response.status} en ${endpoint}: ${await response.text()}`);
   }
   const data = await response.json();
-  return data.map(parseMatch).filter(Boolean);
+  return data.map((raw) => parseMatch(raw, status)).filter(Boolean);
+}
+
+async function fetchPastMatches() {
+  const response = await fetch(
+    'https://api.pandascore.co/dota2/matches/past?per_page=100&sort=-end_at',
+    { headers: { Authorization: `Bearer ${PANDASCORE_API_KEY}` } },
+  );
+  if (!response.ok) {
+    console.warn(`No se pudo traer el historial de partidos pasados (HTTP ${response.status}) — se sigue sin historial cara a cara.`);
+    return [];
+  }
+  const data = await response.json();
+  return data.map(parsePastMatch).filter(Boolean);
 }
 
 async function replaceMatchesCollection(matches) {
@@ -110,12 +175,22 @@ async function replaceMatchesCollection(matches) {
   }
 }
 
-const matches = await fetchUpcomingMatches();
+const [upcoming, running, pastMatches] = await Promise.all([
+  fetchMatches('upcoming', 'upcoming'),
+  fetchMatches('running', 'running'),
+  fetchPastMatches(),
+]);
+
+const matches = [...running, ...upcoming];
 
 if (matches.length === 0) {
   console.warn('PandaScore devolvió 0 partidos — no se toca Firestore, probablemente un hipo transitorio de la API.');
   process.exit(0);
 }
 
+for (const match of matches) {
+  match.headToHead = buildHeadToHead(match, pastMatches);
+}
+
 await replaceMatchesCollection(matches);
-console.log(`Sincronizados ${matches.length} partidos.`);
+console.log(`Sincronizados ${matches.length} partidos (${running.length} en vivo), con historial cara a cara desde ${pastMatches.length} partidos pasados.`);

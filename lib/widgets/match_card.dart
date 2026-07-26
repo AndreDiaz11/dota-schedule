@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../models/match_model.dart';
@@ -30,54 +31,70 @@ class MatchCard extends StatelessWidget {
     final time = DateFormat('HH:mm', 'es').format(match.startTimeLocal);
     final isFavorite = favoriteTeamIds.contains(match.teamA.id) || favoriteTeamIds.contains(match.teamB.id);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isFavorite ? AppColors.accent.withValues(alpha: 0.12) : AppColors.surface,
-        border: const Border(bottom: BorderSide(color: AppColors.divider)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 68,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.chipBackground,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    _bestOfLabels[match.bestOf] ?? '',
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(time, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-              ],
+    return InkWell(
+      onTap: () => context.push('/match', extra: match),
+      child: Ink(
+        decoration: BoxDecoration(
+          color: isFavorite ? AppColors.accent.withValues(alpha: 0.12) : AppColors.surface,
+          border: const Border(bottom: BorderSide(color: AppColors.divider)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 68,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (match.isLive)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'EN VIVO',
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.chipBackground,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        _bestOfLabels[match.bestOf] ?? '',
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                      ),
+                    ),
+                  const SizedBox(height: 6),
+                  Text(time, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  match.tournament.name,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                _TeamRow(team: match.teamA, isFavorite: favoriteTeamIds.contains(match.teamA.id), onTap: onToggleFavorite),
-                const SizedBox(height: 6),
-                _TeamRow(team: match.teamB, isFavorite: favoriteTeamIds.contains(match.teamB.id), onTap: onToggleFavorite),
-              ],
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    match.tournament.name,
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  _TeamRow(team: match.teamA, isFavorite: favoriteTeamIds.contains(match.teamA.id), onTap: onToggleFavorite),
+                  const SizedBox(height: 6),
+                  _TeamRow(team: match.teamB, isFavorite: favoriteTeamIds.contains(match.teamB.id), onTap: onToggleFavorite),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
