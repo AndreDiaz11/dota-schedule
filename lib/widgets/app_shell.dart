@@ -7,6 +7,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/reminder_provider.dart';
 import '../providers/update_provider.dart';
+import '../theme/app_theme.dart';
+
+const _destinations = [
+  (icon: Icons.calendar_month, label: 'Calendario'),
+  (icon: Icons.groups, label: 'Equipos'),
+  (icon: Icons.settings, label: 'Ajustes'),
+];
 
 class AppShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
@@ -40,42 +47,81 @@ class AppShell extends ConsumerWidget {
       }
     }
 
+    final banner = update != null && !dismissed
+        ? MaterialBanner(
+            backgroundColor: AppColors.surface,
+            content: Text(
+              'Hay una actualización disponible (v${update.latestVersion})',
+              style: const TextStyle(color: AppColors.textPrimary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: downloading ? null : () => ref.read(updateBannerDismissedProvider.notifier).state = true,
+                child: const Text('Ahora no'),
+              ),
+              FilledButton(
+                onPressed: downloading ? null : handleUpdateTap,
+                child: downloading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(Platform.isAndroid ? 'Actualizar' : 'Descargar'),
+              ),
+            ],
+          )
+        : null;
+
+    if (Platform.isWindows) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Column(
+          children: [
+            ?banner,
+            Expanded(
+              child: Row(
+                children: [
+                  NavigationRail(
+                    backgroundColor: AppColors.surface,
+                    selectedIndex: navigationShell.currentIndex,
+                    onDestinationSelected: (index) => navigationShell.goBranch(
+                      index,
+                      initialLocation: index == navigationShell.currentIndex,
+                    ),
+                    labelType: NavigationRailLabelType.all,
+                    destinations: [
+                      for (final d in _destinations)
+                        NavigationRailDestination(icon: Icon(d.icon), label: Text(d.label)),
+                    ],
+                  ),
+                  const VerticalDivider(width: 1, color: AppColors.divider),
+                  Expanded(child: navigationShell),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Column(
         children: [
-          if (update != null && !dismissed)
-            MaterialBanner(
-              content: Text('Hay una actualización disponible (v${update.latestVersion})'),
-              actions: [
-                TextButton(
-                  onPressed: downloading ? null : () => ref.read(updateBannerDismissedProvider.notifier).state = true,
-                  child: const Text('Ahora no'),
-                ),
-                FilledButton(
-                  onPressed: downloading ? null : handleUpdateTap,
-                  child: downloading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(Platform.isAndroid ? 'Actualizar' : 'Descargar'),
-                ),
-              ],
-            ),
+          ?banner,
           Expanded(child: navigationShell),
         ],
       ),
       bottomNavigationBar: NavigationBar(
+        backgroundColor: AppColors.surface,
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) => navigationShell.goBranch(
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.calendar_month), label: 'Calendario'),
-          NavigationDestination(icon: Icon(Icons.groups), label: 'Equipos'),
-          NavigationDestination(icon: Icon(Icons.settings), label: 'Ajustes'),
+        destinations: [
+          for (final d in _destinations) NavigationDestination(icon: Icon(d.icon), label: d.label),
         ],
       ),
     );

@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 
 import '../models/match_model.dart';
 import '../models/team.dart';
+import '../theme/app_theme.dart';
+import 'team_logo.dart';
 
 class MatchCard extends StatelessWidget {
   final MatchModel match;
@@ -25,73 +27,91 @@ class MatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final time = DateFormat('EEE d MMM · HH:mm', 'es').format(match.startTimeLocal);
+    final time = DateFormat('HH:mm', 'es').format(match.startTimeLocal);
     final isFavorite = favoriteTeamIds.contains(match.teamA.id) || favoriteTeamIds.contains(match.teamB.id);
 
-    return Card(
-      color: isFavorite ? theme.colorScheme.primaryContainer : null,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Container(
+      decoration: BoxDecoration(
+        color: isFavorite ? AppColors.accent.withValues(alpha: 0.12) : AppColors.surface,
+        border: const Border(bottom: BorderSide(color: AppColors.divider)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 68,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.chipBackground,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                   child: Text(
-                    match.tournament.name,
-                    style: theme.textTheme.labelMedium,
-                    overflow: TextOverflow.ellipsis,
+                    _bestOfLabels[match.bestOf] ?? '',
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
                   ),
                 ),
-                Text(_bestOfLabels[match.bestOf] ?? '', style: theme.textTheme.labelMedium),
+                const SizedBox(height: 6),
+                Text(time, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
               ],
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _TeamButton(team: match.teamA, isFavorite: favoriteTeamIds.contains(match.teamA.id), onTap: onToggleFavorite),
-                const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('vs')),
-                _TeamButton(team: match.teamB, isFavorite: favoriteTeamIds.contains(match.teamB.id), onTap: onToggleFavorite),
+                Text(
+                  match.tournament.name,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                _TeamRow(team: match.teamA, isFavorite: favoriteTeamIds.contains(match.teamA.id), onTap: onToggleFavorite),
+                const SizedBox(height: 6),
+                _TeamRow(team: match.teamB, isFavorite: favoriteTeamIds.contains(match.teamB.id), onTap: onToggleFavorite),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(time, style: theme.textTheme.bodyMedium),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _TeamButton extends StatelessWidget {
+class _TeamRow extends StatelessWidget {
   final Team team;
   final bool isFavorite;
   final ValueChanged<String> onTap;
 
-  const _TeamButton({required this.team, required this.isFavorite, required this.onTap});
+  const _TeamRow({required this.team, required this.isFavorite, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(6),
       onTap: () => onTap(team.id),
+      borderRadius: BorderRadius.circular(6),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 2),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isFavorite ? Icons.star : Icons.star_border,
-              size: 18,
-              color: isFavorite ? Colors.amber : Theme.of(context).colorScheme.outline,
+            TeamLogo(logoUrl: team.logoUrl, teamName: team.name, size: 24),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                team.name,
+                style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            const SizedBox(width: 4),
-            Text(
-              team.name,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            Icon(
+              isFavorite ? Icons.bookmark : Icons.bookmark_border,
+              size: 20,
+              color: isFavorite ? AppColors.accentOnDark : AppColors.textSecondary,
             ),
           ],
         ),

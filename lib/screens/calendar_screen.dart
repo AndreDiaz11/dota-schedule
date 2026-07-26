@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../models/match_model.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
+import '../theme/app_theme.dart';
 import '../widgets/match_card.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -23,6 +24,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final favoritesAsync = ref.watch(favoritesProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Calendario'),
         actions: [
@@ -47,14 +49,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               : matches;
 
           if (visible.isEmpty) {
-            return const Center(child: Text('No hay partidos próximos para mostrar.'));
+            return const Center(
+              child: Text('No hay partidos próximos para mostrar.', style: TextStyle(color: AppColors.textSecondary)),
+            );
           }
 
           final grouped = _groupByDay(visible);
           final days = grouped.keys.toList()..sort();
 
           return ListView.builder(
-            padding: const EdgeInsets.all(12),
             itemCount: days.length,
             itemBuilder: (context, index) {
               final day = days[index];
@@ -63,20 +66,17 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
                     child: Text(
                       DateFormat('EEEE d MMMM', 'es').format(day),
-                      style: Theme.of(context).textTheme.titleSmall,
+                      style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold),
                     ),
                   ),
                   for (final m in dayMatches)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: MatchCard(
-                        match: m,
-                        favoriteTeamIds: favorites,
-                        onToggleFavorite: favoritesNotifier.toggle,
-                      ),
+                    MatchCard(
+                      match: m,
+                      favoriteTeamIds: favorites,
+                      onToggleFavorite: favoritesNotifier.toggle,
                     ),
                 ],
               );

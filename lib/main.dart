@@ -11,6 +11,7 @@ import 'services/auth_service.dart';
 import 'services/group_repository.dart';
 import 'services/group_store.dart';
 import 'services/push_service.dart';
+import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,10 +44,7 @@ class DotaScheduleApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Dota 2 Schedule',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB22222)),
-        useMaterial3: true,
-      ),
+      theme: buildAppTheme(),
       routerConfig: router,
     );
   }
