@@ -164,7 +164,7 @@ class _NavList extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Dota 2 Schedule',
+            'Pulse',
             style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
           ),
         ),

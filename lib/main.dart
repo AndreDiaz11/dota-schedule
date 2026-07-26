@@ -42,7 +42,7 @@ class DotaScheduleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Dota 2 Schedule',
+      title: 'Pulse',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
       routerConfig: router,

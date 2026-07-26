@@ -8,7 +8,7 @@ class LocalNotificationService {
     if (_initialized) return;
     const settings = InitializationSettings(
       windows: WindowsInitializationSettings(
-        appName: 'Dota 2 Schedule',
+        appName: 'Pulse',
         appUserModelId: 'com.dotaschedule.dota_schedule',
         guid: '5a6f3f2e-9b1a-4b8a-9f0a-7c2f6e1d4a3b',
       ),

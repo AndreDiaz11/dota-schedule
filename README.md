@@ -1,4 +1,4 @@
-# Dota 2 Schedule
+# Pulse
 
 App para Android y Windows que muestra el calendario de próximos partidos profesionales de Dota 2, con equipos favoritos sincronizados entre dispositivos y avisos con anticipación.
 
