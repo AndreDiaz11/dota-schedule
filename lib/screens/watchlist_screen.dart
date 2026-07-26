@@ -6,6 +6,7 @@ import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/match_grouping.dart';
+import '../utils/peru_time.dart';
 import '../widgets/drawer_menu_button.dart';
 import '../widgets/match_card.dart';
 import '../widgets/month_calendar.dart';
@@ -25,7 +26,7 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    final now = peruNow();
     _month = DateTime(now.year, now.month);
     _selectedDay = DateTime(now.year, now.month, now.day);
   }

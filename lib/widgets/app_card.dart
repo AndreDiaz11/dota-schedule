@@ -10,6 +10,7 @@ class AppCard extends StatelessWidget {
   final Color? color;
   final double radius;
   final Color? glowColor;
+  final Color? leftAccentColor;
 
   const AppCard({
     super.key,
@@ -20,6 +21,7 @@ class AppCard extends StatelessWidget {
     this.color,
     this.radius = AppRadius.md,
     this.glowColor,
+    this.leftAccentColor,
   });
 
   @override
@@ -44,9 +46,17 @@ class AppCard extends StatelessWidget {
                   side: BorderSide(color: glowColor!, width: 1.4),
                 )
               : null,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(padding: padding, child: child),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (leftAccentColor != null) Container(width: 4, color: leftAccentColor),
+              Expanded(
+                child: InkWell(
+                  onTap: onTap,
+                  child: Padding(padding: padding, child: child),
+                ),
+              ),
+            ],
           ),
         ),
       ),

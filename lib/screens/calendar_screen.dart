@@ -7,6 +7,7 @@ import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/match_grouping.dart';
+import '../utils/peru_time.dart';
 import '../widgets/drawer_menu_button.dart';
 import '../widgets/match_card.dart';
 import '../widgets/state_message.dart';
@@ -26,7 +27,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    final now = peruNow();
     final today = DateTime(now.year, now.month, now.day);
     _selectedDay = today;
     _strip = List.generate(14, (i) => today.add(Duration(days: i)));

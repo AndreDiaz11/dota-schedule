@@ -55,6 +55,26 @@ Color regionColor(Region region) {
   }
 }
 
+const _regionLabels = {
+  Region.na: 'Norteamérica',
+  Region.sa: 'Sudamérica',
+  Region.eu: 'Europa',
+  Region.cn: 'China',
+  Region.sea: 'Sudeste Asiático',
+  Region.other: 'Otra región',
+};
+
+String regionLabel(Region region) => _regionLabels[region] ?? '';
+
+Color tournamentAccentColor(String tournamentId) {
+  var hash = 0;
+  for (final unit in tournamentId.codeUnits) {
+    hash = (hash * 31 + unit) & 0x7fffffff;
+  }
+  final hue = (hash % 360).toDouble();
+  return HSLColor.fromAHSL(1, hue, 0.55, 0.58).toColor();
+}
+
 class AppShadows {
   static const card = [
     BoxShadow(color: Color(0x40000000), blurRadius: 14, offset: Offset(0, 6)),

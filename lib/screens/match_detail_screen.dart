@@ -22,7 +22,7 @@ class MatchDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateLabel = DateFormat('EEEE d MMM, HH:mm', 'es').format(match.startTimeLocal);
+    final dateLabel = DateFormat('EEEE d MMM, h:mm a', 'es').format(match.startTimePe);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -162,7 +162,7 @@ class _H2HTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat('d MMM yyyy', 'es').format(h2h.dateLocal);
+    final date = DateFormat('d MMM yyyy', 'es').format(h2h.datePe);
     final teamAWon = h2h.winnerId == match.teamA.id;
     final teamBWon = h2h.winnerId == match.teamB.id;
 

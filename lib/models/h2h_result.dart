@@ -1,3 +1,5 @@
+import '../utils/peru_time.dart';
+
 class H2HResult {
   final DateTime dateUtc;
   final String tournamentName;
@@ -14,4 +16,6 @@ class H2HResult {
   });
 
   DateTime get dateLocal => dateUtc.toLocal();
+
+  DateTime get datePe => dateUtc.add(peruOffset);
 }

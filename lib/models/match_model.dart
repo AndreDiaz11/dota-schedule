@@ -1,3 +1,4 @@
+import '../utils/peru_time.dart';
 import 'h2h_result.dart';
 import 'team.dart';
 import 'tournament.dart';
@@ -28,6 +29,8 @@ class MatchModel {
   });
 
   DateTime get startTimeLocal => startTimeUtc.toLocal();
+
+  DateTime get startTimePe => startTimeUtc.add(peruOffset);
 
   bool get isLive => status == MatchStatus.running;
 

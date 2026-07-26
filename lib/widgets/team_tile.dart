@@ -18,15 +18,6 @@ class TeamTile extends StatelessWidget {
     required this.onToggleFavorite,
   });
 
-  static const _regionLabels = {
-    Region.na: 'Norteamérica',
-    Region.sa: 'Sudamérica',
-    Region.eu: 'Europa',
-    Region.cn: 'China',
-    Region.sea: 'Sudeste Asiático',
-    Region.other: 'Otra región',
-  };
-
   @override
   Widget build(BuildContext context) {
     return AppCard(
@@ -52,7 +43,7 @@ class TeamTile extends StatelessWidget {
                       margin: const EdgeInsets.only(right: 6),
                       decoration: BoxDecoration(color: regionColor(team.region), shape: BoxShape.circle),
                     ),
-                    Text(_regionLabels[team.region] ?? '', style: const TextStyle(color: AppColors.textSecondary)),
+                    Text(regionLabel(team.region), style: const TextStyle(color: AppColors.textSecondary)),
                   ],
                 ),
               ],

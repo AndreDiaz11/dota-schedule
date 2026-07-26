@@ -14,15 +14,6 @@ class TeamProfileScreen extends ConsumerWidget {
 
   const TeamProfileScreen({super.key, required this.team});
 
-  static const _regionLabels = {
-    Region.na: 'Norteamérica',
-    Region.sa: 'Sudamérica',
-    Region.eu: 'Europa',
-    Region.cn: 'China',
-    Region.sea: 'Sudeste Asiático',
-    Region.other: 'Otra región',
-  };
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final matchesAsync = ref.watch(matchesProvider);
@@ -69,7 +60,7 @@ class TeamProfileScreen extends ConsumerWidget {
                       decoration: BoxDecoration(color: regionColor(team.region), shape: BoxShape.circle),
                     ),
                     Text(
-                      _regionLabels[team.region] ?? '',
+                      regionLabel(team.region),
                       style: const TextStyle(color: AppColors.textSecondary),
                     ),
                   ],

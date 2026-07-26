@@ -29,13 +29,14 @@ class MatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final time = DateFormat('HH:mm', 'es').format(match.startTimeLocal);
+    final time = DateFormat('h:mm a', 'es').format(match.startTimePe);
     final isFavorite = favoriteTeamIds.contains(match.teamA.id) || favoriteTeamIds.contains(match.teamB.id);
 
     return AppCard(
       onTap: () => context.push('/match', extra: match),
       color: isFavorite ? Color.alphaBlend(AppColors.accent.withValues(alpha: 0.12), AppColors.surface) : null,
       glowColor: match.isLive ? AppColors.live : null,
+      leftAccentColor: tournamentAccentColor(match.tournament.id),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
