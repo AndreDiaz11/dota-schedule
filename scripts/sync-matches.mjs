@@ -44,6 +44,13 @@ function parseOpponents(raw) {
   return { teamAJson, teamBJson };
 }
 
+function parseLiveScore(raw, teamAId, teamBId, status) {
+  if (status !== 'running') return null;
+  const results = raw.results ?? [];
+  const scoreFor = (id) => results.find((r) => String(r.team_id) === id)?.score ?? 0;
+  return { teamAScore: scoreFor(teamAId), teamBScore: scoreFor(teamBId) };
+}
+
 function parseMatch(raw, status) {
   const parsedOpponents = parseOpponents(raw);
   if (!parsedOpponents) return null;
@@ -53,17 +60,20 @@ function parseMatch(raw, status) {
 
   const league = raw.league;
   const tournament = raw.tournament;
+  const teamA = parseTeam(parsedOpponents.teamAJson);
+  const teamB = parseTeam(parsedOpponents.teamBJson);
 
   return {
     id: String(raw.id),
     tournamentId: String(league?.id ?? tournament?.id ?? raw.id),
     tournamentName: league?.name ?? tournament?.name ?? 'Torneo',
     tier: mapTier(tournament?.tier),
-    teamA: parseTeam(parsedOpponents.teamAJson),
-    teamB: parseTeam(parsedOpponents.teamBJson),
+    teamA,
+    teamB,
     startTimeUtc: Timestamp.fromDate(new Date(scheduledAt)),
     bestOf: mapBestOf(raw.number_of_games),
     status,
+    liveScore: parseLiveScore(raw, teamA.id, teamB.id, status),
     updatedAt: Timestamp.now(),
   };
 }
