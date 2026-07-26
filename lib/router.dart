@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'models/match_model.dart';
 import 'models/team.dart';
 import 'screens/calendar_screen.dart';
+import 'screens/favorites_screen.dart';
 import 'screens/link_screen.dart';
 import 'screens/match_detail_screen.dart';
 import 'screens/news_screen.dart';
@@ -57,6 +58,9 @@ GoRouter buildAppRouter({required String initialLocation}) {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/teams', builder: (context, state) => const TeamSelectorScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/favorites', builder: (context, state) => const FavoritesScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/tournaments', builder: (context, state) => const TournamentsScreen()),

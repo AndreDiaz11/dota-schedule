@@ -15,6 +15,7 @@ const _destinations = [
   (icon: Icons.calendar_month, label: 'Calendario'),
   (icon: Icons.calendar_view_month, label: 'Seguimiento'),
   (icon: Icons.groups, label: 'Equipos'),
+  (icon: Icons.bookmark, label: 'Favoritos'),
   (icon: Icons.emoji_events, label: 'Torneos'),
   (icon: Icons.settings, label: 'Ajustes'),
   (icon: Icons.article, label: 'Noticias'),
@@ -96,6 +97,7 @@ class AppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(matchReminderCheckerProvider);
+    ref.watch(persistentNotificationSyncProvider);
     final scaffoldKey = ref.watch(scaffoldKeyProvider);
 
     ref.listen<AsyncValue<UpdateInfo?>>(updateCheckProvider, (previous, next) {

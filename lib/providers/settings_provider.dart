@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/group_repository.dart';
+import '../services/persistent_notification_store.dart';
 import 'group_provider.dart';
 
 class NotificationLeadNotifier extends StreamNotifier<int> {
@@ -27,4 +28,21 @@ class NotificationLeadNotifier extends StreamNotifier<int> {
 
 final notificationLeadProvider = StreamNotifierProvider<NotificationLeadNotifier, int>(
   NotificationLeadNotifier.new,
+);
+
+class PersistentNotificationEnabledNotifier extends AsyncNotifier<bool> {
+  final _store = PersistentNotificationStore();
+
+  @override
+  Future<bool> build() => _store.loadEnabled();
+
+  Future<void> setEnabled(bool enabled) async {
+    state = AsyncData(enabled);
+    await _store.saveEnabled(enabled);
+  }
+}
+
+final persistentNotificationEnabledProvider =
+    AsyncNotifierProvider<PersistentNotificationEnabledNotifier, bool>(
+  PersistentNotificationEnabledNotifier.new,
 );

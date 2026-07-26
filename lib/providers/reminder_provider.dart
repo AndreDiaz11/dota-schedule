@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/group_repository.dart';
 import '../services/local_notification_service.dart';
 import '../services/notified_matches_store.dart';
+import '../services/persistent_notification_service.dart';
 import 'favorites_provider.dart';
 import 'matches_provider.dart';
 import 'settings_provider.dart';
@@ -54,6 +55,49 @@ final matchReminderCheckerProvider = Provider<void>((ref) {
 
   final timer = Timer.periodic(const Duration(minutes: 1), (_) => check());
   check();
+
+  ref.onDispose(timer.cancel);
+});
+
+final persistentNotificationServiceProvider = Provider<PersistentNotificationService>((ref) {
+  return PersistentNotificationService();
+});
+
+final persistentNotificationSyncProvider = Provider<void>((ref) {
+  if (!Platform.isAndroid) return;
+
+  Future<void> sync() async {
+    final service = ref.read(persistentNotificationServiceProvider);
+    final enabled = ref.read(persistentNotificationEnabledProvider).value ?? true;
+    if (!enabled) {
+      await service.stop();
+      return;
+    }
+
+    final favorites = ref.read(favoritesProvider).value ?? const <String>{};
+    if (favorites.isEmpty) {
+      await service.stop();
+      return;
+    }
+
+    final matches = await ref.read(matchesProvider.future);
+    final favoriteMatches = matches.where(
+      (m) => favorites.contains(m.teamA.id) || favorites.contains(m.teamB.id),
+    ).toList();
+
+    if (favoriteMatches.isEmpty) {
+      await service.stop();
+      return;
+    }
+
+    await service.sync(favoriteMatches);
+  }
+
+  final timer = Timer.periodic(const Duration(minutes: 1), (_) => sync());
+  sync();
+
+  ref.listen(persistentNotificationEnabledProvider, (_, _) => sync());
+  ref.listen(favoritesProvider, (_, _) => sync());
 
   ref.onDispose(timer.cancel);
 });

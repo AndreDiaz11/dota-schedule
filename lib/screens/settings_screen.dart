@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +24,7 @@ class SettingsScreen extends ConsumerWidget {
     final leadAsync = ref.watch(notificationLeadProvider);
     final notifier = ref.read(notificationLeadProvider.notifier);
     final groupCode = ref.watch(groupCodeProvider);
+    final persistentEnabledAsync = ref.watch(persistentNotificationEnabledProvider);
 
     return Scaffold(
       appBar: AppBar(leading: const DrawerMenuButton(), title: const Text('Ajustes')),
@@ -69,6 +72,22 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            if (Platform.isAndroid) ...[
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                child: Text('Notificación fija'),
+              ),
+              Card(
+                child: SwitchListTile(
+                  title: const Text('Mostrar siempre el próximo partido favorito'),
+                  subtitle: const Text(
+                    'Notificación fija en la barra, no se puede deslizar para cerrar. Se actualiza sola aunque la app esté cerrada.',
+                  ),
+                  value: persistentEnabledAsync.value ?? true,
+                  onChanged: (v) => ref.read(persistentNotificationEnabledProvider.notifier).setEnabled(v),
+                ),
+              ),
+            ],
             Card(
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
