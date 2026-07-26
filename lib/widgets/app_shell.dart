@@ -19,6 +19,26 @@ class AppShell extends ConsumerWidget {
     final updateAsync = ref.watch(updateCheckProvider);
     final update = updateAsync.value;
     final dismissed = ref.watch(updateBannerDismissedProvider);
+    final downloading = ref.watch(apkDownloadingProvider);
+
+    Future<void> handleUpdateTap() async {
+      if (!Platform.isAndroid) {
+        launchUrl(Uri.parse(update!.downloadUrlWindows), mode: LaunchMode.externalApplication);
+        return;
+      }
+      ref.read(apkDownloadingProvider.notifier).state = true;
+      try {
+        await ref.read(apkUpdaterProvider).downloadAndInstall(update!.downloadUrlAndroid);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('No se pudo instalar la actualización: $e')),
+          );
+        }
+      } finally {
+        ref.read(apkDownloadingProvider.notifier).state = false;
+      }
+    }
 
     return Scaffold(
       body: Column(
@@ -28,15 +48,18 @@ class AppShell extends ConsumerWidget {
               content: Text('Hay una actualización disponible (v${update.latestVersion})'),
               actions: [
                 TextButton(
-                  onPressed: () => ref.read(updateBannerDismissedProvider.notifier).state = true,
+                  onPressed: downloading ? null : () => ref.read(updateBannerDismissedProvider.notifier).state = true,
                   child: const Text('Ahora no'),
                 ),
                 FilledButton(
-                  onPressed: () {
-                    final url = Platform.isWindows ? update.downloadUrlWindows : update.downloadUrlAndroid;
-                    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                  },
-                  child: const Text('Descargar'),
+                  onPressed: downloading ? null : handleUpdateTap,
+                  child: downloading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(Platform.isAndroid ? 'Actualizar' : 'Descargar'),
                 ),
               ],
             ),
