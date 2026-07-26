@@ -81,7 +81,8 @@ class _LinkScreenState extends ConsumerState<LinkScreen> {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(title: const Text('Vincular dispositivo')),
-        body: _FadeIn(
+        body: SafeArea(
+          child: _FadeIn(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Center(
@@ -123,6 +124,7 @@ class _LinkScreenState extends ConsumerState<LinkScreen> {
               ),
             ),
           ),
+          ),
         ),
       );
     }
@@ -130,7 +132,8 @@ class _LinkScreenState extends ConsumerState<LinkScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Vincular dispositivo')),
-      body: _FadeIn(
+      body: SafeArea(
+        child: _FadeIn(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Center(
@@ -193,6 +196,7 @@ class _LinkScreenState extends ConsumerState<LinkScreen> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );

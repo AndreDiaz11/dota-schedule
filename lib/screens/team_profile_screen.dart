@@ -45,7 +45,8 @@ class TeamProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Column(
+      body: SafeArea(
+        child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(20),
@@ -107,6 +108,7 @@ class TeamProfileScreen extends ConsumerWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }

@@ -26,9 +26,10 @@ class MatchDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Detalle del partido')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
           AppCard(
             margin: EdgeInsets.zero,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -103,7 +104,8 @@ class MatchDetailScreen extends StatelessWidget {
             )
           else
             ...match.headToHead.map((h2h) => _H2HTile(h2h: h2h, match: match)),
-        ],
+          ],
+        ),
       ),
     );
   }
