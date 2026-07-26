@@ -1,6 +1,8 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 
+import { mapRegion } from './region-map.mjs';
+
 const PANDASCORE_API_KEY = process.env.PANDASCORE_API_KEY;
 const FIREBASE_SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT;
 
@@ -19,16 +21,6 @@ const db = getFirestore();
 
 const TIER_MAP = { s: 'tier1', a: 'tier1', b: 'tier2', c: 'tier3', d: 'qualifier' };
 
-const REGION_BY_COUNTRY = {
-  US: 'na', CA: 'na', MX: 'na',
-  BR: 'sa', PE: 'sa', AR: 'sa', CL: 'sa', CO: 'sa', EC: 'sa', UY: 'sa', PY: 'sa', BO: 'sa', VE: 'sa',
-  RU: 'eu', UA: 'eu', GR: 'eu', RS: 'eu', DE: 'eu', FR: 'eu', ES: 'eu', PT: 'eu', IT: 'eu', PL: 'eu',
-  GB: 'eu', UK: 'eu', SE: 'eu', NO: 'eu', FI: 'eu', DK: 'eu', NL: 'eu', BE: 'eu', CZ: 'eu', SK: 'eu',
-  RO: 'eu', BG: 'eu', KZ: 'eu',
-  CN: 'cn',
-  PH: 'sea', ID: 'sea', MY: 'sea', TH: 'sea', VN: 'sea', SG: 'sea', MM: 'sea',
-};
-
 const MAX_H2H_ENTRIES = 5;
 
 function mapTier(tier) {
@@ -37,11 +29,6 @@ function mapTier(tier) {
 
 function mapBestOf(games) {
   return { 1: 'bo1', 2: 'bo2', 3: 'bo3', 5: 'bo5' }[games] ?? 'bo1';
-}
-
-function mapRegion(countryCode) {
-  if (!countryCode) return 'other';
-  return REGION_BY_COUNTRY[countryCode.toUpperCase()] ?? 'other';
 }
 
 function parseTeam(json) {
