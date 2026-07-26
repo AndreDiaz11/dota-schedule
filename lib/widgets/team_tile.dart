@@ -32,6 +32,8 @@ class TeamTile extends StatelessWidget {
               children: [
                 Text(
                   team.name,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                   style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
@@ -43,7 +45,14 @@ class TeamTile extends StatelessWidget {
                       margin: const EdgeInsets.only(right: 6),
                       decoration: BoxDecoration(color: regionColor(team.region), shape: BoxShape.circle),
                     ),
-                    Text(regionLabel(team.region), style: const TextStyle(color: AppColors.textSecondary)),
+                    Flexible(
+                      child: Text(
+                        regionLabel(team.region),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
+                    ),
                   ],
                 ),
               ],

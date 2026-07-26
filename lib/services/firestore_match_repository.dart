@@ -19,13 +19,18 @@ class FirestoreMatchRepository implements MatchRepository {
 
   @override
   Future<List<Team>> getTeams() async {
-    final matches = await getUpcomingMatches();
-    final teamsById = <String, Team>{};
-    for (final m in matches) {
-      teamsById[m.teamA.id] = m.teamA;
-      teamsById[m.teamB.id] = m.teamB;
-    }
-    final teams = teamsById.values.toList()..sort((a, b) => a.name.compareTo(b.name));
+    final snapshot = await _firestore.collection('teams').get();
+    final teams = snapshot.docs
+        .map((doc) {
+          try {
+            return Team.fromJson(doc.data());
+          } catch (_) {
+            return null;
+          }
+        })
+        .whereType<Team>()
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
     return teams;
   }
 
