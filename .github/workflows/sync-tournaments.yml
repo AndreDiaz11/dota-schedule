@@ -1,0 +1,22 @@
+name: Sync Dota 2 tournaments
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+        working-directory: scripts
+      - run: node sync-tournaments.mjs
+        working-directory: scripts
+        env:
+          PANDASCORE_API_KEY: ${{ secrets.PANDASCORE_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
