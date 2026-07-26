@@ -46,17 +46,19 @@ class AppCard extends StatelessWidget {
                   side: BorderSide(color: glowColor!, width: 1.4),
                 )
               : null,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (leftAccentColor != null) Container(width: 4, color: leftAccentColor),
-              Expanded(
-                child: InkWell(
-                  onTap: onTap,
-                  child: Padding(padding: padding, child: child),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (leftAccentColor != null) Container(width: 4, color: leftAccentColor),
+                Expanded(
+                  child: InkWell(
+                    onTap: onTap,
+                    child: Padding(padding: padding, child: child),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
