@@ -10,6 +10,7 @@ import 'screens/news_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/team_profile_screen.dart';
 import 'screens/team_selector_screen.dart';
+import 'screens/watchlist_screen.dart';
 import 'widgets/app_shell.dart';
 
 Page<void> _detailTransitionPage(Widget child, GoRouterState state) {
@@ -49,6 +50,9 @@ GoRouter buildAppRouter({required String initialLocation}) {
         branches: [
           StatefulShellBranch(routes: [
             GoRoute(path: '/calendar', builder: (context, state) => const CalendarScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/watchlist', builder: (context, state) => const WatchlistScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/teams', builder: (context, state) => const TeamSelectorScreen()),

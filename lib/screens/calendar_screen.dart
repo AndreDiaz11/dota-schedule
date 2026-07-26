@@ -6,6 +6,7 @@ import '../models/match_model.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/match_grouping.dart';
 import '../widgets/drawer_menu_button.dart';
 import '../widgets/match_card.dart';
 import '../widgets/state_message.dart';
@@ -61,7 +62,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         data: (matches) {
           final favorites = favoritesAsync.value ?? const {};
           final favoritesNotifier = ref.read(favoritesProvider.notifier);
-          final byDay = _groupByDay(matches);
+          final byDay = groupMatchesByDay(matches);
 
           final dayMatches = (byDay[_selectedDay] ?? const <MatchModel>[])
               .where((m) => !_onlyFavorites || favorites.contains(m.teamA.id) || favorites.contains(m.teamB.id))
@@ -102,19 +103,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         },
       ),
     );
-  }
-
-  Map<DateTime, List<MatchModel>> _groupByDay(List<MatchModel> matches) {
-    final map = <DateTime, List<MatchModel>>{};
-    for (final m in matches) {
-      final local = m.startTimeLocal;
-      final day = DateTime(local.year, local.month, local.day);
-      map.putIfAbsent(day, () => []).add(m);
-    }
-    for (final list in map.values) {
-      list.sort((a, b) => a.startTimeUtc.compareTo(b.startTimeUtc));
-    }
-    return map;
   }
 }
 
