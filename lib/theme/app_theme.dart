@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../models/team.dart';
+import '../models/tournament.dart';
+
 class AppColors {
   static const background = Color(0xFF121214);
   static const surface = Color(0xFF1B1B1F);
@@ -18,6 +21,38 @@ class AppRadius {
   static const sm = 10.0;
   static const md = 14.0;
   static const lg = 18.0;
+}
+
+Color tierColor(TournamentTier tier) {
+  switch (tier) {
+    case TournamentTier.tier1:
+      return const Color(0xFFE0B84C);
+    case TournamentTier.tier2:
+      return const Color(0xFFC0C4CC);
+    case TournamentTier.tier3:
+      return const Color(0xFFCD8A4C);
+    case TournamentTier.qualifier:
+      return const Color(0xFF6C93E0);
+    case TournamentTier.amateur:
+      return const Color(0xFF7A7A82);
+  }
+}
+
+Color regionColor(Region region) {
+  switch (region) {
+    case Region.na:
+      return const Color(0xFF4C7FDD);
+    case Region.sa:
+      return const Color(0xFF4CC97D);
+    case Region.eu:
+      return const Color(0xFF9B6CDD);
+    case Region.cn:
+      return const Color(0xFFE0A83C);
+    case Region.sea:
+      return const Color(0xFF4CC9DD);
+    case Region.other:
+      return const Color(0xFF8A8A93);
+  }
 }
 
 class AppShadows {

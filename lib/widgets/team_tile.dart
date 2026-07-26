@@ -33,7 +33,7 @@ class TeamTile extends StatelessWidget {
       onTap: () => context.push('/team', extra: team),
       child: Row(
         children: [
-          TeamLogo(logoUrl: team.logoUrl, teamName: team.name, size: 40),
+          TeamLogo(logoUrl: team.logoUrl, teamName: team.name, region: team.region, size: 40),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -44,7 +44,17 @@ class TeamTile extends StatelessWidget {
                   style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
-                Text(_regionLabels[team.region] ?? '', style: const TextStyle(color: AppColors.textSecondary)),
+                Row(
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(color: regionColor(team.region), shape: BoxShape.circle),
+                    ),
+                    Text(_regionLabels[team.region] ?? '', style: const TextStyle(color: AppColors.textSecondary)),
+                  ],
+                ),
               ],
             ),
           ),

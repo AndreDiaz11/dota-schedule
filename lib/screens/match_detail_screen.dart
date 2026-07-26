@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../models/h2h_result.dart';
 import '../models/match_model.dart';
+import '../models/team.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_card.dart';
 import '../widgets/team_logo.dart';
@@ -35,10 +36,25 @@ class MatchDetailScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             child: Column(
               children: [
-                Text(
-                  match.tournament.name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(color: tierColor(match.tournament.tier), shape: BoxShape.circle),
+                    ),
+                    Flexible(
+                      child: Text(
+                        match.tournament.name,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 if (match.isLive)
@@ -77,12 +93,16 @@ class MatchDetailScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    Expanded(child: _TeamColumn(name: match.teamA.name, logoUrl: match.teamA.logoUrl)),
+                    Expanded(
+                      child: _TeamColumn(name: match.teamA.name, logoUrl: match.teamA.logoUrl, region: match.teamA.region),
+                    ),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12),
                       child: Text('VS', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
                     ),
-                    Expanded(child: _TeamColumn(name: match.teamB.name, logoUrl: match.teamB.logoUrl)),
+                    Expanded(
+                      child: _TeamColumn(name: match.teamB.name, logoUrl: match.teamB.logoUrl, region: match.teamB.region),
+                    ),
                   ],
                 ),
               ],
@@ -114,14 +134,15 @@ class MatchDetailScreen extends StatelessWidget {
 class _TeamColumn extends StatelessWidget {
   final String name;
   final String logoUrl;
+  final Region region;
 
-  const _TeamColumn({required this.name, required this.logoUrl});
+  const _TeamColumn({required this.name, required this.logoUrl, required this.region});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TeamLogo(logoUrl: logoUrl, teamName: name, size: 56),
+        TeamLogo(logoUrl: logoUrl, teamName: name, region: region, size: 56),
         const SizedBox(height: 8),
         Text(
           name,

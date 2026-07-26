@@ -35,6 +35,7 @@ class MatchCard extends StatelessWidget {
     return AppCard(
       onTap: () => context.push('/match', extra: match),
       color: isFavorite ? Color.alphaBlend(AppColors.accent.withValues(alpha: 0.12), AppColors.surface) : null,
+      glowColor: match.isLive ? AppColors.live : null,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -67,10 +68,22 @@ class MatchCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  match.tournament.name,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(color: tierColor(match.tournament.tier), shape: BoxShape.circle),
+                    ),
+                    Expanded(
+                      child: Text(
+                        match.tournament.name,
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 6),
                 _TeamRow(team: match.teamA, isFavorite: favoriteTeamIds.contains(match.teamA.id), onTap: onToggleFavorite),
@@ -156,7 +169,7 @@ class _TeamRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
           child: Row(
             children: [
-              TeamLogo(logoUrl: team.logoUrl, teamName: team.name, size: 24),
+              TeamLogo(logoUrl: team.logoUrl, teamName: team.name, region: team.region, size: 24),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

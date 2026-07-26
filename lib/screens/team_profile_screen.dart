@@ -52,16 +52,27 @@ class TeamProfileScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                TeamLogo(logoUrl: team.logoUrl, teamName: team.name, size: 72),
+                TeamLogo(logoUrl: team.logoUrl, teamName: team.name, region: team.region, size: 72),
                 const SizedBox(height: 10),
                 Text(
                   team.name,
                   style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  _regionLabels[team.region] ?? '',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(color: regionColor(team.region), shape: BoxShape.circle),
+                    ),
+                    Text(
+                      _regionLabels[team.region] ?? '',
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
+                  ],
                 ),
               ],
             ),
