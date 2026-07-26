@@ -49,11 +49,11 @@ class _TeamSelectorScreenState extends ConsumerState<TeamSelectorScreen> {
               onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
             ),
           ),
-          SizedBox(
-            height: 44,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+            child: Wrap(
+              spacing: 0,
+              runSpacing: 4,
               children: [
                 _RegionChip(
                   label: 'Todos',
