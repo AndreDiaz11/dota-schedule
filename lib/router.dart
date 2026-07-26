@@ -10,6 +10,7 @@ import 'screens/news_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/team_profile_screen.dart';
 import 'screens/team_selector_screen.dart';
+import 'screens/tournaments_screen.dart';
 import 'screens/watchlist_screen.dart';
 import 'widgets/app_shell.dart';
 
@@ -56,6 +57,9 @@ GoRouter buildAppRouter({required String initialLocation}) {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/teams', builder: (context, state) => const TeamSelectorScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/tournaments', builder: (context, state) => const TournamentsScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
