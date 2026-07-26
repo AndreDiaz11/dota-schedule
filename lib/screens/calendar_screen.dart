@@ -41,6 +41,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         error: (err, _) => Center(child: Text('No se pudo cargar el calendario: $err')),
         data: (matches) {
           final favorites = favoritesAsync.value ?? const {};
+          final favoritesNotifier = ref.read(favoritesProvider.notifier);
           final visible = _onlyFavorites
               ? matches.where((m) => favorites.contains(m.teamA.id) || favorites.contains(m.teamB.id)).toList()
               : matches;
@@ -73,7 +74,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       padding: const EdgeInsets.only(bottom: 8),
                       child: MatchCard(
                         match: m,
-                        isFavorite: favorites.contains(m.teamA.id) || favorites.contains(m.teamB.id),
+                        favoriteTeamIds: favorites,
+                        onToggleFavorite: favoritesNotifier.toggle,
                       ),
                     ),
                 ],

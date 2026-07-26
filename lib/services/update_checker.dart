@@ -41,7 +41,7 @@ class UpdateChecker {
       final url = asset['browser_download_url'] as String?;
       if (url == null) continue;
       if (name.endsWith('.apk')) apkUrl = url;
-      if (name.endsWith('.zip')) exeUrl = url;
+      if (name.endsWith('.exe')) exeUrl = url;
     }
 
     final releaseUrl = data['html_url'] as String? ?? 'https://github.com/$_repo/releases/latest';
