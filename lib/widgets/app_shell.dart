@@ -13,6 +13,7 @@ const _destinations = [
   (icon: Icons.calendar_month, label: 'Calendario'),
   (icon: Icons.groups, label: 'Equipos'),
   (icon: Icons.settings, label: 'Ajustes'),
+  (icon: Icons.article, label: 'Noticias'),
 ];
 
 class AppShell extends ConsumerWidget {
