@@ -153,20 +153,57 @@ class _NavList extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         for (var i = 0; i < _destinations.length; i++)
-          ListTile(
+          _NavItem(
+            icon: _destinations[i].icon,
+            label: _destinations[i].label,
             selected: i == currentIndex,
-            selectedTileColor: AppColors.accent.withValues(alpha: 0.18),
-            leading: Icon(
-              _destinations[i].icon,
-              color: i == currentIndex ? AppColors.accentOnDark : AppColors.textSecondary,
-            ),
-            title: Text(
-              _destinations[i].label,
-              style: TextStyle(color: i == currentIndex ? AppColors.textPrimary : AppColors.textSecondary),
-            ),
             onTap: () => onSelect(i),
           ),
       ],
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _NavItem({required this.icon, required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: selected ? AppColors.accent.withValues(alpha: 0.18) : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: selected ? AppColors.accentOnDark : AppColors.textSecondary),
+                const SizedBox(width: 14),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: selected ? AppColors.textPrimary : AppColors.textSecondary,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

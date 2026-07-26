@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
 import '../widgets/drawer_menu_button.dart';
+import '../widgets/state_message.dart';
 import '../widgets/team_tile.dart';
 
 class TeamSelectorScreen extends ConsumerStatefulWidget {
@@ -48,7 +49,10 @@ class _TeamSelectorScreenState extends ConsumerState<TeamSelectorScreen> {
           Expanded(
             child: teamsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('No se pudo cargar la lista de equipos: $err')),
+              error: (err, _) => const StateMessage(
+                icon: Icons.error_outline,
+                message: 'No se pudo cargar la lista de equipos.',
+              ),
               data: (teams) {
                 final filtered = _query.isEmpty
                     ? teams
@@ -56,10 +60,14 @@ class _TeamSelectorScreenState extends ConsumerState<TeamSelectorScreen> {
                 final favorites = favoritesAsync.value ?? const {};
 
                 if (filtered.isEmpty) {
-                  return const Center(child: Text('Ningún equipo coincide con la búsqueda.'));
+                  return const StateMessage(
+                    icon: Icons.search_off,
+                    message: 'Ningún equipo coincide con la búsqueda.',
+                  );
                 }
 
                 return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final team = filtered[index];

@@ -6,6 +6,7 @@ import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/match_card.dart';
+import '../widgets/state_message.dart';
 import '../widgets/team_logo.dart';
 
 class TeamProfileScreen extends ConsumerWidget {
@@ -78,21 +79,23 @@ class TeamProfileScreen extends ConsumerWidget {
           Expanded(
             child: matchesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('No se pudieron cargar los partidos: $err')),
+              error: (err, _) => const StateMessage(
+                icon: Icons.error_outline,
+                message: 'No se pudieron cargar los partidos.',
+              ),
               data: (matches) {
                 final teamMatches = matches.where((m) => m.involvesTeam(team.id)).toList()
                   ..sort((a, b) => a.startTimeUtc.compareTo(b.startTimeUtc));
 
                 if (teamMatches.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'Este equipo no tiene partidos programados.',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
+                  return const StateMessage(
+                    icon: Icons.event_busy,
+                    message: 'Este equipo no tiene partidos programados.',
                   );
                 }
 
                 return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
                   itemCount: teamMatches.length,
                   itemBuilder: (context, index) => MatchCard(
                     match: teamMatches[index],

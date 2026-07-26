@@ -11,6 +11,19 @@ class AppColors {
   static const chipBackground = Color(0xFF2A2A30);
   static const textPrimary = Color(0xFFF2F2F3);
   static const textSecondary = Color(0xFFA0A0A8);
+  static const live = Color(0xFFE24C4C);
+}
+
+class AppRadius {
+  static const sm = 10.0;
+  static const md = 14.0;
+  static const lg = 18.0;
+}
+
+class AppShadows {
+  static const card = [
+    BoxShadow(color: Color(0x40000000), blurRadius: 14, offset: Offset(0, 6)),
+  ];
 }
 
 ThemeData buildAppTheme() {
@@ -50,10 +63,14 @@ ThemeData buildAppTheme() {
     ),
     cardTheme: const CardThemeData(
       color: AppColors.surface,
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      elevation: 6,
+      shadowColor: Colors.black,
+      surfaceTintColor: Colors.transparent,
+      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(AppRadius.md))),
     ),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(color: AppColors.accent),
     chipTheme: base.chipTheme.copyWith(
       backgroundColor: AppColors.chipBackground,
       labelStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 12),

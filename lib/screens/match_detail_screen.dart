@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/h2h_result.dart';
 import '../models/match_model.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_card.dart';
 import '../widgets/team_logo.dart';
 
 class MatchDetailScreen extends StatelessWidget {
@@ -28,61 +29,65 @@ class MatchDetailScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(
-            match.tournament.name,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
-          ),
-          const SizedBox(height: 4),
-          if (match.isLive)
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(top: 4, bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.redAccent,
-                  borderRadius: BorderRadius.circular(8),
+          AppCard(
+            margin: EdgeInsets.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Column(
+              children: [
+                Text(
+                  match.tournament.name,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                 ),
-                child: const Text(
-                  'EN VIVO',
-                  style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                const SizedBox(height: 4),
+                if (match.isLive)
+                  Container(
+                    margin: const EdgeInsets.only(top: 4, bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.live,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'EN VIVO',
+                      style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, bottom: 8),
+                    child: Text(
+                      dateLabel,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.chipBackground,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    _bestOfLabels[match.bestOf] ?? '',
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  ),
                 ),
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 8),
-              child: Text(
-                dateLabel,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
-              ),
-            ),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.chipBackground,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                _bestOfLabels[match.bestOf] ?? '',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-              ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(child: _TeamColumn(name: match.teamA.name, logoUrl: match.teamA.logoUrl)),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('VS', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(child: _TeamColumn(name: match.teamB.name, logoUrl: match.teamB.logoUrl)),
+                  ],
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(child: _TeamColumn(name: match.teamA.name, logoUrl: match.teamA.logoUrl)),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text('VS', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
-              ),
-              Expanded(child: _TeamColumn(name: match.teamB.name, logoUrl: match.teamB.logoUrl)),
-            ],
-          ),
-          const SizedBox(height: 28),
           const Text(
             'Historial cara a cara',
             style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
@@ -138,13 +143,8 @@ class _H2HTile extends StatelessWidget {
     final teamAWon = h2h.winnerId == match.teamA.id;
     final teamBWon = h2h.winnerId == match.teamB.id;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

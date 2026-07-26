@@ -8,6 +8,7 @@ import '../providers/matches_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/drawer_menu_button.dart';
 import '../widgets/match_card.dart';
+import '../widgets/state_message.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
@@ -53,7 +54,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       ),
       body: matchesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('No se pudo cargar el calendario: $err')),
+        error: (err, _) => const StateMessage(
+          icon: Icons.error_outline,
+          message: 'No se pudo cargar el calendario.',
+        ),
         data: (matches) {
           final favorites = favoritesAsync.value ?? const {};
           final favoritesNotifier = ref.read(favoritesProvider.notifier);
@@ -73,21 +77,25 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ),
               const Divider(height: 1, color: AppColors.divider),
               Expanded(
-                child: dayMatches.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'No hay partidos ese día.',
-                          style: TextStyle(color: AppColors.textSecondary),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  child: dayMatches.isEmpty
+                      ? const StateMessage(
+                          key: ValueKey('empty'),
+                          icon: Icons.event_busy,
+                          message: 'No hay partidos ese día.',
+                        )
+                      : ListView.builder(
+                          key: ValueKey(_selectedDay),
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          itemCount: dayMatches.length,
+                          itemBuilder: (context, index) => MatchCard(
+                            match: dayMatches[index],
+                            favoriteTeamIds: favorites,
+                            onToggleFavorite: favoritesNotifier.toggle,
+                          ),
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: dayMatches.length,
-                        itemBuilder: (context, index) => MatchCard(
-                          match: dayMatches[index],
-                          favoriteTeamIds: favorites,
-                          onToggleFavorite: favoritesNotifier.toggle,
-                        ),
-                      ),
+                ),
               ),
             ],
           );
@@ -137,45 +145,56 @@ class _DateStrip extends StatelessWidget {
           final isSelected = day == selected;
           final hasMatches = daysWithMatches.contains(day);
 
-          return InkWell(
-            onTap: () => onSelect(day),
-            child: Container(
-              width: 52,
-              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.accent : Colors.transparent,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    DateFormat('EEE', 'es').format(day),
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${day.day}',
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  if (hasMatches)
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.white : AppColors.accentOnDark,
-                        shape: BoxShape.circle,
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => onSelect(day),
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                width: 52,
+                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.accent : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: isSelected
+                      ? [BoxShadow(color: AppColors.accent.withValues(alpha: 0.45), blurRadius: 10, offset: const Offset(0, 4))]
+                      : null,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 220),
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : AppColors.textSecondary,
+                        fontSize: 12,
                       ),
+                      child: Text(DateFormat('EEE', 'es').format(day)),
                     ),
-                ],
+                    const SizedBox(height: 2),
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 220),
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      child: Text('${day.day}'),
+                    ),
+                    const SizedBox(height: 2),
+                    if (hasMatches)
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white : AppColors.accentOnDark,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           );

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'models/match_model.dart';
@@ -11,6 +12,25 @@ import 'screens/team_profile_screen.dart';
 import 'screens/team_selector_screen.dart';
 import 'widgets/app_shell.dart';
 
+Page<void> _detailTransitionPage(Widget child, GoRouterState state) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 260),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween(begin: const Offset(0, 0.04), end: Offset.zero).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 GoRouter buildAppRouter({required String initialLocation}) {
   return GoRouter(
     initialLocation: initialLocation,
@@ -18,11 +38,11 @@ GoRouter buildAppRouter({required String initialLocation}) {
       GoRoute(path: '/link', builder: (context, state) => const LinkScreen()),
       GoRoute(
         path: '/match',
-        builder: (context, state) => MatchDetailScreen(match: state.extra as MatchModel),
+        pageBuilder: (context, state) => _detailTransitionPage(MatchDetailScreen(match: state.extra as MatchModel), state),
       ),
       GoRoute(
         path: '/team',
-        builder: (context, state) => TeamProfileScreen(team: state.extra as Team),
+        pageBuilder: (context, state) => _detailTransitionPage(TeamProfileScreen(team: state.extra as Team), state),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),

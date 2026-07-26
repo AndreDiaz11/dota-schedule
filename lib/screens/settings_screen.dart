@@ -49,28 +49,31 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               child: Text('Avisarme con anticipación'),
             ),
-            RadioGroup<int>(
-              groupValue: currentMinutes,
-              onChanged: (v) {
-                if (v != null) notifier.setLeadMinutes(v);
-              },
-              child: Column(
-                children: [
-                  for (final entry in _options.entries)
-                    RadioListTile<int>(
-                      title: Text(entry.value),
-                      value: entry.key,
-                    ),
-                ],
+            Card(
+              child: RadioGroup<int>(
+                groupValue: currentMinutes,
+                onChanged: (v) {
+                  if (v != null) notifier.setLeadMinutes(v);
+                },
+                child: Column(
+                  children: [
+                    for (final entry in _options.entries)
+                      RadioListTile<int>(
+                        title: Text(entry.value),
+                        value: entry.key,
+                      ),
+                  ],
+                ),
               ),
             ),
-            const Divider(height: 32),
-            const ListTile(
-              leading: Icon(Icons.info_outline),
-              title: Text('En la PC, las notificaciones solo aparecen mientras el programa está abierto.'),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text('En la PC, las notificaciones solo aparecen mientras el programa está abierto.'),
+              ),
             ),
           ],
         ),
