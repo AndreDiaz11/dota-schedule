@@ -2,6 +2,7 @@ import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 
 import { mapRegion } from './region-map.mjs';
+import { mapTier } from './tier-map.mjs';
 
 const PANDASCORE_API_KEY = process.env.PANDASCORE_API_KEY;
 const FIREBASE_SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -19,13 +20,7 @@ const serviceAccount = JSON.parse(FIREBASE_SERVICE_ACCOUNT);
 initializeApp({ credential: cert(serviceAccount) });
 const db = getFirestore();
 
-const TIER_MAP = { s: 'tier1', a: 'tier1', b: 'tier2', c: 'tier3', d: 'qualifier' };
-
 const MAX_H2H_ENTRIES = 5;
-
-function mapTier(tier) {
-  return TIER_MAP[tier] ?? 'amateur';
-}
 
 function mapBestOf(games) {
   return { 1: 'bo1', 2: 'bo2', 3: 'bo3', 5: 'bo5' }[games] ?? 'bo1';

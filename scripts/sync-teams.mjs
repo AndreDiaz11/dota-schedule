@@ -2,6 +2,7 @@ import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
 import { mapRegion } from './region-map.mjs';
+import { mapTier } from './tier-map.mjs';
 
 const PANDASCORE_API_KEY = process.env.PANDASCORE_API_KEY;
 const FIREBASE_SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -30,8 +31,14 @@ function parseTeam(json) {
   };
 }
 
-function collectTeamsFromMatches(matches, teamsById) {
+const PRO_TIERS = new Set(['tier1', 'tier2', 'tier3']);
+
+function collectTeamsFromMatches(matches, teamsById, { onlyProTier = false } = {}) {
   for (const match of matches) {
+    if (onlyProTier) {
+      const tier = mapTier(match.tournament?.tier ?? match.league?.tier);
+      if (!PRO_TIERS.has(tier)) continue;
+    }
     for (const opponent of match.opponents ?? []) {
       if (opponent.opponent) {
         const team = parseTeam(opponent.opponent);
@@ -63,7 +70,7 @@ async function collectTeams() {
   for (let page = 1; page <= PAST_PAGES; page++) {
     const matches = await fetchMatchesPage('past', page);
     if (matches.length === 0) break;
-    collectTeamsFromMatches(matches, teamsById);
+    collectTeamsFromMatches(matches, teamsById, { onlyProTier: true });
   }
 
   return [...teamsById.values()];
@@ -97,4 +104,4 @@ if (teams.length === 0) {
 }
 
 await replaceTeamsCollection(teams);
-console.log(`Sincronizados ${teams.length} equipos (partidos actuales + últimos ~3 años de historial).`);
+console.log(`Sincronizados ${teams.length} equipos (partidos actuales + tier1/tier2/tier3 de los últimos ~3 años, sin clasificatorios).`);
