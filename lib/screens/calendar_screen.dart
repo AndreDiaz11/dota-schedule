@@ -17,6 +17,17 @@ class CalendarScreen extends ConsumerStatefulWidget {
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   bool _onlyFavorites = false;
+  late DateTime _selectedDay;
+  late final List<DateTime> _strip;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    _selectedDay = today;
+    _strip = List.generate(14, (i) => today.add(Duration(days: i)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,43 +55,39 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         data: (matches) {
           final favorites = favoritesAsync.value ?? const {};
           final favoritesNotifier = ref.read(favoritesProvider.notifier);
-          final visible = _onlyFavorites
-              ? matches.where((m) => favorites.contains(m.teamA.id) || favorites.contains(m.teamB.id)).toList()
-              : matches;
+          final byDay = _groupByDay(matches);
 
-          if (visible.isEmpty) {
-            return const Center(
-              child: Text('No hay partidos próximos para mostrar.', style: TextStyle(color: AppColors.textSecondary)),
-            );
-          }
+          final dayMatches = (byDay[_selectedDay] ?? const <MatchModel>[])
+              .where((m) => !_onlyFavorites || favorites.contains(m.teamA.id) || favorites.contains(m.teamB.id))
+              .toList();
 
-          final grouped = _groupByDay(visible);
-          final days = grouped.keys.toList()..sort();
-
-          return ListView.builder(
-            itemCount: days.length,
-            itemBuilder: (context, index) {
-              final day = days[index];
-              final dayMatches = grouped[day]!;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
-                    child: Text(
-                      DateFormat('EEEE d MMMM', 'es').format(day),
-                      style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  for (final m in dayMatches)
-                    MatchCard(
-                      match: m,
-                      favoriteTeamIds: favorites,
-                      onToggleFavorite: favoritesNotifier.toggle,
-                    ),
-                ],
-              );
-            },
+          return Column(
+            children: [
+              _DateStrip(
+                days: _strip,
+                selected: _selectedDay,
+                daysWithMatches: byDay.keys.toSet(),
+                onSelect: (day) => setState(() => _selectedDay = day),
+              ),
+              const Divider(height: 1, color: AppColors.divider),
+              Expanded(
+                child: dayMatches.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No hay partidos ese día.',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: dayMatches.length,
+                        itemBuilder: (context, index) => MatchCard(
+                          match: dayMatches[index],
+                          favoriteTeamIds: favorites,
+                          onToggleFavorite: favoritesNotifier.toggle,
+                        ),
+                      ),
+              ),
+            ],
           );
         },
       ),
@@ -98,5 +105,80 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       list.sort((a, b) => a.startTimeUtc.compareTo(b.startTimeUtc));
     }
     return map;
+  }
+}
+
+class _DateStrip extends StatelessWidget {
+  final List<DateTime> days;
+  final DateTime selected;
+  final Set<DateTime> daysWithMatches;
+  final ValueChanged<DateTime> onSelect;
+
+  const _DateStrip({
+    required this.days,
+    required this.selected,
+    required this.daysWithMatches,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 72,
+      color: AppColors.surface,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        itemCount: days.length,
+        itemBuilder: (context, index) {
+          final day = days[index];
+          final isSelected = day == selected;
+          final hasMatches = daysWithMatches.contains(day);
+
+          return InkWell(
+            onTap: () => onSelect(day),
+            child: Container(
+              width: 52,
+              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.accent : Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    DateFormat('EEE', 'es').format(day),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${day.day}',
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  if (hasMatches)
+                    Container(
+                      width: 4,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white : AppColors.accentOnDark,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
