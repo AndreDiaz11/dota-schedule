@@ -35,7 +35,7 @@ class SettingsScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: const Icon(Icons.link),
                   title: Text('Tu código de vinculación: $groupCode'),
-                  subtitle: const Text('Usalo para sincronizar otro dispositivo'),
+                  subtitle: const Text('Úsalo para sincronizar otro dispositivo'),
                   trailing: IconButton(
                     icon: const Icon(Icons.copy),
                     onPressed: () {

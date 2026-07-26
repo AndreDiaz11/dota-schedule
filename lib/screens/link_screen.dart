@@ -95,7 +95,7 @@ class _LinkScreenState extends ConsumerState<LinkScreen> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Anotalo: lo vas a necesitar para vincular tu otro dispositivo (celular o PC). Podés verlo de nuevo en Ajustes.',
+                  'Anótalo: lo vas a necesitar para vincular tu otro dispositivo (celular o PC). Puedes verlo de nuevo en Ajustes.',
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -120,7 +120,7 @@ class _LinkScreenState extends ConsumerState<LinkScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Vinculá este dispositivo para sincronizar tus equipos favoritos',
+                  'Vincula este dispositivo para sincronizar tus equipos favoritos',
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -130,7 +130,7 @@ class _LinkScreenState extends ConsumerState<LinkScreen> {
                   child: const Text('Crear código nuevo'),
                 ),
                 const SizedBox(height: 32),
-                const Text('¿Ya tenés un código de otro dispositivo?'),
+                const Text('¿Ya tienes un código de otro dispositivo?'),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _codeController,
