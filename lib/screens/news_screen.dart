@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/news_item.dart';
 import '../providers/news_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/drawer_menu_button.dart';
 
 class NewsScreen extends ConsumerWidget {
   const NewsScreen({super.key});
@@ -17,7 +18,7 @@ class NewsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Noticias')),
+      appBar: AppBar(leading: const DrawerMenuButton(), title: const Text('Noticias')),
       body: newsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('No se pudieron cargar las noticias: $err')),

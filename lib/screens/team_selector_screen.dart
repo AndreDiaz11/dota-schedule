@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
+import '../widgets/drawer_menu_button.dart';
 import '../widgets/team_tile.dart';
 
 class TeamSelectorScreen extends ConsumerStatefulWidget {
@@ -29,7 +30,7 @@ class _TeamSelectorScreenState extends ConsumerState<TeamSelectorScreen> {
     final favoritesNotifier = ref.read(favoritesProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Equipos')),
+      appBar: AppBar(leading: const DrawerMenuButton(), title: const Text('Equipos')),
       body: Column(
         children: [
           Padding(

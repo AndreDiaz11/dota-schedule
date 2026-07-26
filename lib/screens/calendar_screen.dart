@@ -6,6 +6,7 @@ import '../models/match_model.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/drawer_menu_button.dart';
 import '../widgets/match_card.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -37,6 +38,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const DrawerMenuButton(),
         title: const Text('Calendario'),
         actions: [
           Padding(

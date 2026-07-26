@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/group_provider.dart';
 import '../providers/settings_provider.dart';
+import '../widgets/drawer_menu_button.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -23,7 +24,7 @@ class SettingsScreen extends ConsumerWidget {
     final groupCode = ref.watch(groupCodeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
+      appBar: AppBar(leading: const DrawerMenuButton(), title: const Text('Ajustes')),
       body: leadAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error: $err')),

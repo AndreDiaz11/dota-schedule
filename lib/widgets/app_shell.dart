@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../providers/nav_provider.dart';
 import '../providers/reminder_provider.dart';
 import '../providers/update_provider.dart';
 import '../theme/app_theme.dart';
@@ -28,6 +29,7 @@ class AppShell extends ConsumerWidget {
     final update = updateAsync.value;
     final dismissed = ref.watch(updateBannerDismissedProvider);
     final downloading = ref.watch(apkDownloadingProvider);
+    final scaffoldKey = ref.watch(scaffoldKeyProvider);
 
     Future<void> handleUpdateTap() async {
       if (!Platform.isAndroid) {
@@ -74,8 +76,13 @@ class AppShell extends ConsumerWidget {
           )
         : null;
 
+    void selectBranch(int index) {
+      navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex);
+    }
+
     if (Platform.isWindows) {
       return Scaffold(
+        key: scaffoldKey,
         backgroundColor: AppColors.background,
         body: Column(
           children: [
@@ -83,18 +90,12 @@ class AppShell extends ConsumerWidget {
             Expanded(
               child: Row(
                 children: [
-                  NavigationRail(
-                    backgroundColor: AppColors.surface,
-                    selectedIndex: navigationShell.currentIndex,
-                    onDestinationSelected: (index) => navigationShell.goBranch(
-                      index,
-                      initialLocation: index == navigationShell.currentIndex,
+                  SizedBox(
+                    width: 220,
+                    child: ColoredBox(
+                      color: AppColors.surface,
+                      child: _NavList(currentIndex: navigationShell.currentIndex, onSelect: selectBranch),
                     ),
-                    labelType: NavigationRailLabelType.all,
-                    destinations: [
-                      for (final d in _destinations)
-                        NavigationRailDestination(icon: Icon(d.icon), label: Text(d.label)),
-                    ],
                   ),
                   const VerticalDivider(width: 1, color: AppColors.divider),
                   Expanded(child: navigationShell),
@@ -107,24 +108,65 @@ class AppShell extends ConsumerWidget {
     }
 
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: AppColors.background,
+      drawer: Drawer(
+        backgroundColor: AppColors.surface,
+        child: SafeArea(
+          child: _NavList(
+            currentIndex: navigationShell.currentIndex,
+            onSelect: (index) {
+              Navigator.of(context).pop();
+              selectBranch(index);
+            },
+          ),
+        ),
+      ),
       body: Column(
         children: [
           ?banner,
           Expanded(child: navigationShell),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: AppColors.surface,
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+}
+
+class _NavList extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onSelect;
+
+  const _NavList({required this.currentIndex, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        const SizedBox(height: 20),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Dota 2 Schedule',
+            style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
-        destinations: [
-          for (final d in _destinations) NavigationDestination(icon: Icon(d.icon), label: d.label),
-        ],
-      ),
+        const SizedBox(height: 20),
+        for (var i = 0; i < _destinations.length; i++)
+          ListTile(
+            selected: i == currentIndex,
+            selectedTileColor: AppColors.accent.withValues(alpha: 0.18),
+            leading: Icon(
+              _destinations[i].icon,
+              color: i == currentIndex ? AppColors.accentOnDark : AppColors.textSecondary,
+            ),
+            title: Text(
+              _destinations[i].label,
+              style: TextStyle(color: i == currentIndex ? AppColors.textPrimary : AppColors.textSecondary),
+            ),
+            onTap: () => onSelect(i),
+          ),
+      ],
     );
   }
 }
