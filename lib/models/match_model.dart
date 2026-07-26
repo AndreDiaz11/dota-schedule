@@ -1,5 +1,6 @@
 import '../utils/peru_time.dart';
 import 'h2h_result.dart';
+import 'live_score.dart';
 import 'team.dart';
 import 'tournament.dart';
 
@@ -16,6 +17,7 @@ class MatchModel {
   final BestOf bestOf;
   final MatchStatus status;
   final List<H2HResult> headToHead;
+  final LiveScore? liveScore;
 
   const MatchModel({
     required this.id,
@@ -26,6 +28,7 @@ class MatchModel {
     required this.bestOf,
     this.status = MatchStatus.upcoming,
     this.headToHead = const [],
+    this.liveScore,
   });
 
   DateTime get startTimeLocal => startTimeUtc.toLocal();

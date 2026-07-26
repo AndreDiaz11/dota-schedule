@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../models/match_model.dart';
+import '../models/tournament.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
 import '../theme/app_theme.dart';
@@ -19,8 +20,11 @@ class CalendarScreen extends ConsumerStatefulWidget {
   ConsumerState<CalendarScreen> createState() => _CalendarScreenState();
 }
 
+enum _SortMode { time, tournament }
+
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   bool _onlyFavorites = false;
+  _SortMode _sortMode = _SortMode.time;
   late DateTime _selectedDay;
   late final List<DateTime> _strip;
 
@@ -78,6 +82,27 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 onSelect: (day) => setState(() => _selectedDay = day),
               ),
               const Divider(height: 1, color: AppColors.divider),
+              if (dayMatches.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                  child: Row(
+                    children: [
+                      const Text('Ordenar:', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                      const SizedBox(width: 8),
+                      _SortChip(
+                        label: 'Hora',
+                        selected: _sortMode == _SortMode.time,
+                        onTap: () => setState(() => _sortMode = _SortMode.time),
+                      ),
+                      const SizedBox(width: 6),
+                      _SortChip(
+                        label: 'Torneo',
+                        selected: _sortMode == _SortMode.tournament,
+                        onTap: () => setState(() => _sortMode = _SortMode.tournament),
+                      ),
+                    ],
+                  ),
+                ),
               Expanded(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 250),
@@ -87,21 +112,114 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           icon: Icons.event_busy,
                           message: 'No hay partidos ese día.',
                         )
-                      : ListView.builder(
-                          key: ValueKey(_selectedDay),
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          itemCount: dayMatches.length,
-                          itemBuilder: (context, index) => MatchCard(
-                            match: dayMatches[index],
-                            favoriteTeamIds: favorites,
-                            onToggleFavorite: favoritesNotifier.toggle,
-                          ),
-                        ),
+                      : _sortMode == _SortMode.time
+                          ? ListView.builder(
+                              key: ValueKey('$_selectedDay-time'),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              itemCount: dayMatches.length,
+                              itemBuilder: (context, index) => MatchCard(
+                                match: dayMatches[index],
+                                favoriteTeamIds: favorites,
+                                onToggleFavorite: favoritesNotifier.toggle,
+                              ),
+                            )
+                          : ListView(
+                              key: ValueKey('$_selectedDay-tournament'),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              children: [
+                                for (final entry in _groupByTournament(dayMatches).entries) ...[
+                                  _TournamentHeader(
+                                    name: entry.value.first.tournament.name,
+                                    tier: entry.value.first.tournament.tier,
+                                  ),
+                                  for (final match in entry.value)
+                                    MatchCard(
+                                      match: match,
+                                      favoriteTeamIds: favorites,
+                                      onToggleFavorite: favoritesNotifier.toggle,
+                                    ),
+                                ],
+                              ],
+                            ),
                 ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Map<String, List<MatchModel>> _groupByTournament(List<MatchModel> matches) {
+    final map = <String, List<MatchModel>>{};
+    for (final m in matches) {
+      map.putIfAbsent(m.tournament.id, () => []).add(m);
+    }
+    return map;
+  }
+}
+
+class _SortChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SortChip({required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.accent : AppColors.chipBackground,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? Colors.white : AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TournamentHeader extends StatelessWidget {
+  final String name;
+  final TournamentTier tier;
+
+  const _TournamentHeader({required this.name, required this.tier});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(color: tierColor(tier), shape: BoxShape.circle),
+          ),
+          Expanded(
+            child: Text(
+              name,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+        ],
       ),
     );
   }

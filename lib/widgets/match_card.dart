@@ -87,9 +87,19 @@ class MatchCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                _TeamRow(team: match.teamA, isFavorite: favoriteTeamIds.contains(match.teamA.id), onTap: onToggleFavorite),
+                _TeamRow(
+                  team: match.teamA,
+                  isFavorite: favoriteTeamIds.contains(match.teamA.id),
+                  onTap: onToggleFavorite,
+                  liveScore: match.isLive ? match.liveScore?.teamAScore : null,
+                ),
                 const SizedBox(height: 6),
-                _TeamRow(team: match.teamB, isFavorite: favoriteTeamIds.contains(match.teamB.id), onTap: onToggleFavorite),
+                _TeamRow(
+                  team: match.teamB,
+                  isFavorite: favoriteTeamIds.contains(match.teamB.id),
+                  onTap: onToggleFavorite,
+                  liveScore: match.isLive ? match.liveScore?.teamBScore : null,
+                ),
               ],
             ),
           ),
@@ -156,11 +166,58 @@ class _TeamRow extends StatelessWidget {
   final Team team;
   final bool isFavorite;
   final ValueChanged<String> onTap;
+  final int? liveScore;
 
-  const _TeamRow({required this.team, required this.isFavorite, required this.onTap});
+  const _TeamRow({required this.team, required this.isFavorite, required this.onTap, this.liveScore});
 
   @override
   Widget build(BuildContext context) {
+    final rowContent = Row(
+      children: [
+        TeamLogo(logoUrl: team.logoUrl, teamName: team.name, region: team.region, size: 24),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            team.name,
+            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (liveScore != null)
+          Container(
+            width: 26,
+            height: 22,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.live.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              '$liveScore',
+              style: const TextStyle(color: AppColors.live, fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+          )
+        else
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+            child: Icon(
+              isFavorite ? Icons.bookmark : Icons.bookmark_border,
+              key: ValueKey(isFavorite),
+              size: 20,
+              color: isFavorite ? AppColors.accentOnDark : AppColors.textSecondary,
+            ),
+          ),
+      ],
+    );
+
+    if (liveScore != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+        child: rowContent,
+      );
+    }
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -168,29 +225,7 @@ class _TeamRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-          child: Row(
-            children: [
-              TeamLogo(logoUrl: team.logoUrl, teamName: team.name, region: team.region, size: 24),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  team.name,
-                  style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
-                child: Icon(
-                  isFavorite ? Icons.bookmark : Icons.bookmark_border,
-                  key: ValueKey(isFavorite),
-                  size: 20,
-                  color: isFavorite ? AppColors.accentOnDark : AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
+          child: rowContent,
         ),
       ),
     );

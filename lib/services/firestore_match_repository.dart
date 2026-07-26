@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/h2h_result.dart';
+import '../models/live_score.dart';
 import '../models/match_model.dart';
 import '../models/team.dart';
 import '../models/tournament.dart';
@@ -59,10 +60,19 @@ class FirestoreMatchRepository implements MatchRepository {
           orElse: () => MatchStatus.upcoming,
         ),
         headToHead: _parseHeadToHead(data['headToHead']),
+        liveScore: _parseLiveScore(data['liveScore']),
       );
     } catch (_) {
       return null;
     }
+  }
+
+  LiveScore? _parseLiveScore(dynamic raw) {
+    if (raw is! Map) return null;
+    final teamAScore = raw['teamAScore'];
+    final teamBScore = raw['teamBScore'];
+    if (teamAScore is! num || teamBScore is! num) return null;
+    return LiveScore(teamAScore: teamAScore.toInt(), teamBScore: teamBScore.toInt());
   }
 
   List<H2HResult> _parseHeadToHead(dynamic raw) {
