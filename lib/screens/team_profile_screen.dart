@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../models/team.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/matches_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/match_grouping.dart';
 import '../widgets/match_card.dart';
 import '../widgets/state_message.dart';
 import '../widgets/team_logo.dart';
+
+String _capitalize(String s) => s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
 
 class TeamProfileScreen extends ConsumerWidget {
   final Team team;
@@ -97,14 +101,35 @@ class TeamProfileScreen extends ConsumerWidget {
                   );
                 }
 
+                final byDay = groupMatchesByDay(teamMatches);
+                final dateFormat = DateFormat('EEEE d MMM', 'es');
+
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 6),
-                  itemCount: teamMatches.length,
-                  itemBuilder: (context, index) => MatchCard(
-                    match: teamMatches[index],
-                    favoriteTeamIds: favorites,
-                    onToggleFavorite: favoritesNotifier.toggle,
-                  ),
+                  itemCount: byDay.length,
+                  itemBuilder: (context, dayIndex) {
+                    final day = byDay.keys.elementAt(dayIndex);
+                    final dayMatches = byDay[day]!;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                          child: Text(
+                            _capitalize(dateFormat.format(day)),
+                            style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        for (final match in dayMatches)
+                          MatchCard(
+                            match: match,
+                            favoriteTeamIds: favorites,
+                            onToggleFavorite: favoritesNotifier.toggle,
+                          ),
+                      ],
+                    );
+                  },
                 );
               },
             ),
