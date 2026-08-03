@@ -90,7 +90,8 @@ final persistentNotificationSyncProvider = Provider<void>((ref) {
       return;
     }
 
-    await service.sync(favoriteMatches);
+    final leadMinutes = ref.read(notificationLeadProvider).value ?? GroupRepository.defaultLeadMinutes;
+    await service.sync(favoriteMatches, leadMinutes: leadMinutes);
   }
 
   final timer = Timer.periodic(const Duration(minutes: 1), (_) => sync());
@@ -98,6 +99,7 @@ final persistentNotificationSyncProvider = Provider<void>((ref) {
 
   ref.listen(persistentNotificationEnabledProvider, (_, _) => sync());
   ref.listen(favoritesProvider, (_, _) => sync());
+  ref.listen(notificationLeadProvider, (_, _) => sync());
 
   ref.onDispose(timer.cancel);
 });

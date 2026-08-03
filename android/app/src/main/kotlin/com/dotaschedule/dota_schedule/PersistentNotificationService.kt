@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
+import android.os.PowerManager
 import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import org.json.JSONArray
@@ -17,22 +18,28 @@ import org.json.JSONObject
 object PersistentNotificationService {
     private const val PREFS = "pulse_persistent_prefs"
     private const val PREF_MATCHES = "matches"
-    private const val CHANNEL_ID = "pulse_next_match"
+    private const val PREF_LEAD_MINUTES = "lead_minutes"
+    private const val PREF_LAST_ALERT_KEY = "last_alert_key"
+    private const val QUIET_CHANNEL_ID = "pulse_next_match"
+    private const val ALERT_CHANNEL_ID = "pulse_next_match_alert"
     private const val NOTIFICATION_ID = 4201
     private const val ALARM_REQUEST_CODE = 4202
     private const val MINUTE = 60_000L
     private const val FIFTEEN_MINUTES = 15L * MINUTE
     private const val DAY = 86_400_000L
 
-    fun sync(context: Context, matchesJson: String) {
+    fun sync(context: Context, matchesJson: String, leadMinutes: Int) {
         val appContext = context.applicationContext
-        prefs(appContext).edit().putString(PREF_MATCHES, matchesJson).apply()
+        prefs(appContext).edit()
+            .putString(PREF_MATCHES, matchesJson)
+            .putInt(PREF_LEAD_MINUTES, leadMinutes)
+            .apply()
         update(appContext)
     }
 
     fun stop(context: Context) {
         val appContext = context.applicationContext
-        prefs(appContext).edit().remove(PREF_MATCHES).apply()
+        prefs(appContext).edit().remove(PREF_MATCHES).remove(PREF_LAST_ALERT_KEY).apply()
         cancelRefresh(appContext)
         val manager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         manager?.cancel(NOTIFICATION_ID)
@@ -45,15 +52,20 @@ object PersistentNotificationService {
     }
 
     private fun update(context: Context) {
+        val leadMinutes = prefs(context).getInt(PREF_LEAD_MINUTES, 15)
         val match = nextMatch(parseMatches(prefs(context).getString(PREF_MATCHES, "")))
         if (match == null) {
             stop(context)
             return
         }
 
-        createChannel(context)
+        val stage = matchStage(match, leadMinutes)
+        val noisy = stage != null && shouldAlertNow(context, match.id, stage)
+        if (noisy) wakeScreen(context)
+
+        createChannels(context)
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-        manager?.notify(NOTIFICATION_ID, buildNotification(context, match))
+        manager?.notify(NOTIFICATION_ID, buildNotification(context, match, noisy))
         scheduleNextRefresh(context, match)
     }
 
@@ -67,6 +79,7 @@ object PersistentNotificationService {
                 val item = array.getJSONObject(i)
                 matches.add(
                     TrackedMatch(
+                        id = item.optString("id"),
                         teamA = item.optString("teamA"),
                         teamB = item.optString("teamB"),
                         tournament = item.optString("tournament"),
@@ -88,7 +101,23 @@ object PersistentNotificationService {
             .minByOrNull { if (it.isLive) 0L else it.startTimeMs }
     }
 
-    private fun buildNotification(context: Context, match: TrackedMatch): Notification {
+    private fun matchStage(match: TrackedMatch, leadMinutes: Int): String? {
+        if (match.isLive) return "live"
+        val untilStart = match.startTimeMs - System.currentTimeMillis()
+        if (untilStart in 0..(leadMinutes.coerceAtLeast(1) * MINUTE)) return "lead"
+        return null
+    }
+
+    private fun shouldAlertNow(context: Context, matchId: String, stage: String): Boolean {
+        val preferences = prefs(context)
+        val key = "$matchId:$stage"
+        val lastKey = preferences.getString(PREF_LAST_ALERT_KEY, "")
+        if (key == lastKey) return false
+        preferences.edit().putString(PREF_LAST_ALERT_KEY, key).apply()
+        return true
+    }
+
+    private fun buildNotification(context: Context, match: TrackedMatch, noisy: Boolean): Notification {
         val title = "${match.teamA} vs ${match.teamB}"
         val text = if (match.isLive) {
             "EN VIVO ahora · ${match.tournament}"
@@ -105,7 +134,8 @@ object PersistentNotificationService {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val channelId = if (noisy) ALERT_CHANNEL_ID else QUIET_CHANNEL_ID
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_notification_pulse)
             .setColor(0xFF4C7FDD.toInt())
             .setContentTitle(title)
@@ -114,12 +144,16 @@ object PersistentNotificationService {
             .setContentIntent(contentIntent)
             .setOngoing(true)
             .setAutoCancel(false)
-            .setOnlyAlertOnce(true)
-            .setSilent(true)
+            .setOnlyAlertOnce(!noisy)
+            .setSilent(!noisy)
             .setShowWhen(false)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(if (noisy) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
+
+        if (noisy) {
+            builder.setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)
+        }
 
         val notification = builder.build()
         notification.flags = notification.flags or Notification.FLAG_NO_CLEAR or Notification.FLAG_ONGOING_EVENT
@@ -136,6 +170,19 @@ object PersistentNotificationService {
             days == 0L && hours == 0L -> "Empieza en $minutes min"
             days == 0L -> "Empieza en ${hours} h $minutes min"
             else -> "Empieza en $days días, $hours h"
+        }
+    }
+
+    private fun wakeScreen(context: Context) {
+        try {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+            @Suppress("DEPRECATION")
+            val wakeLock = powerManager.newWakeLock(
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+                "Pulse:MatchAlert",
+            )
+            wakeLock.acquire(5000L)
+        } catch (_: Exception) {
         }
     }
 
@@ -180,23 +227,38 @@ object PersistentNotificationService {
         return untilStart.coerceIn(MINUTE, FIFTEEN_MINUTES)
     }
 
-    private fun createChannel(context: Context) {
+    private fun createChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val channel = NotificationChannel(
-            CHANNEL_ID,
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+
+        val quietChannel = NotificationChannel(
+            QUIET_CHANNEL_ID,
             "Próximo partido favorito",
             NotificationManager.IMPORTANCE_LOW,
         )
-        channel.description = "Notificación fija con el próximo partido de tus equipos favoritos"
-        channel.setShowBadge(false)
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-        manager?.createNotificationChannel(channel)
+        quietChannel.description = "Notificación fija con el próximo partido de tus equipos favoritos"
+        quietChannel.setShowBadge(false)
+        quietChannel.setSound(null, null)
+        quietChannel.enableVibration(false)
+        manager.createNotificationChannel(quietChannel)
+
+        val alertChannel = NotificationChannel(
+            ALERT_CHANNEL_ID,
+            "Alerta de partido favorito",
+            NotificationManager.IMPORTANCE_HIGH,
+        )
+        alertChannel.description = "Suena y enciende la pantalla cuando un partido favorito está por empezar o pasa a EN VIVO"
+        alertChannel.setShowBadge(false)
+        alertChannel.enableVibration(true)
+        alertChannel.enableLights(true)
+        manager.createNotificationChannel(alertChannel)
     }
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     private data class TrackedMatch(
+        val id: String,
         val teamA: String,
         val teamB: String,
         val tournament: String,

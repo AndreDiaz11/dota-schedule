@@ -14,7 +14,8 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "sync" -> {
                     val matchesJson = call.argument<String>("matchesJson") ?: "[]"
-                    PersistentNotificationService.sync(applicationContext, matchesJson)
+                    val leadMinutes = call.argument<Int>("leadMinutes") ?: 15
+                    PersistentNotificationService.sync(applicationContext, matchesJson, leadMinutes)
                     result.success(true)
                 }
                 "stop" -> {
