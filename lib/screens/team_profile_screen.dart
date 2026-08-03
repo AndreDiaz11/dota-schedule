@@ -125,7 +125,6 @@ class TeamProfileScreen extends ConsumerWidget {
                           MatchCard(
                             match: match,
                             favoriteTeamIds: favorites,
-                            onToggleFavorite: favoritesNotifier.toggle,
                           ),
                       ],
                     );

@@ -39,7 +39,6 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
   Widget build(BuildContext context) {
     final matchesAsync = ref.watch(matchesProvider);
     final favoritesAsync = ref.watch(favoritesProvider);
-    final favoritesNotifier = ref.read(favoritesProvider.notifier);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -93,7 +92,6 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                           itemBuilder: (context, index) => MatchCard(
                             match: dayMatches[index],
                             favoriteTeamIds: favorites,
-                            onToggleFavorite: favoritesNotifier.toggle,
                           ),
                         ),
                 ),

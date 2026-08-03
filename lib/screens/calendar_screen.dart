@@ -66,7 +66,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         ),
         data: (matches) {
           final favorites = favoritesAsync.value ?? const {};
-          final favoritesNotifier = ref.read(favoritesProvider.notifier);
           final byDay = groupMatchesByDay(matches);
 
           final dayMatches = (byDay[_selectedDay] ?? const <MatchModel>[])
@@ -120,7 +119,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               itemBuilder: (context, index) => MatchCard(
                                 match: dayMatches[index],
                                 favoriteTeamIds: favorites,
-                                onToggleFavorite: favoritesNotifier.toggle,
                               ),
                             )
                           : ListView(
@@ -136,7 +134,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                     MatchCard(
                                       match: match,
                                       favoriteTeamIds: favorites,
-                                      onToggleFavorite: favoritesNotifier.toggle,
                                     ),
                                 ],
                               ],

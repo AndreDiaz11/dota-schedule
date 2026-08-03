@@ -11,13 +11,11 @@ import 'team_logo.dart';
 class MatchCard extends StatelessWidget {
   final MatchModel match;
   final Set<String> favoriteTeamIds;
-  final ValueChanged<String> onToggleFavorite;
 
   const MatchCard({
     super.key,
     required this.match,
     required this.favoriteTeamIds,
-    required this.onToggleFavorite,
   });
 
   static const _bestOfLabels = {
@@ -27,84 +25,111 @@ class MatchCard extends StatelessWidget {
     BestOf.bo5: 'Bo5',
   };
 
+  static Color _readableTextOn(Color background) {
+    return background.computeLuminance() > 0.45 ? const Color(0xFF14141A) : Colors.white;
+  }
+
   @override
   Widget build(BuildContext context) {
     final time = DateFormat('h:mm a', 'es').format(match.startTimePe);
     final isFavorite = favoriteTeamIds.contains(match.teamA.id) || favoriteTeamIds.contains(match.teamB.id);
+    final accentColor = tournamentAccentColor(match.tournament.id);
 
     return AppCard(
       onTap: () => context.push('/match', extra: match),
       color: isFavorite ? Color.alphaBlend(AppColors.accent.withValues(alpha: 0.12), AppColors.surface) : null,
       glowColor: match.isLive ? AppColors.live : null,
-      leftAccentColor: tournamentAccentColor(match.tournament.id),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      leftAccentColor: accentColor,
+      child: Column(
         children: [
-          SizedBox(
-            width: 68,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (match.isLive)
-                  const _LiveBadge()
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.chipBackground,
-                      borderRadius: BorderRadius.circular(6),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(color: accentColor, borderRadius: BorderRadius.circular(8)),
+                  child: Text(
+                    match.tournament.name,
+                    style: TextStyle(
+                      color: _readableTextOn(accentColor),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
                     ),
-                    child: Text(
-                      _bestOfLabels[match.bestOf] ?? '',
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
-                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                const SizedBox(height: 6),
-                Text(time, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-              ],
-            ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(time, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+            ],
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(color: tierColor(match.tournament.tier), shape: BoxShape.circle),
-                    ),
-                    Expanded(
-                      child: Text(
-                        match.tournament.name,
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  match.teamA.name,
+                  textAlign: TextAlign.right,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 6),
-                _TeamRow(
-                  team: match.teamA,
-                  isFavorite: favoriteTeamIds.contains(match.teamA.id),
-                  onTap: onToggleFavorite,
-                  liveScore: match.isLive ? match.liveScore?.teamAScore : null,
+              ),
+              const SizedBox(width: 10),
+              _TeamLogoWithScore(team: match.teamA, score: match.isLive ? match.liveScore?.teamAScore : null),
+              const SizedBox(width: 10),
+              _CenterBadge(match: match, label: _bestOfLabels[match.bestOf] ?? ''),
+              const SizedBox(width: 10),
+              _TeamLogoWithScore(team: match.teamB, score: match.isLive ? match.liveScore?.teamBScore : null),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  match.teamB.name,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 6),
-                _TeamRow(
-                  team: match.teamB,
-                  isFavorite: favoriteTeamIds.contains(match.teamB.id),
-                  onTap: onToggleFavorite,
-                  liveScore: match.isLive ? match.liveScore?.teamBScore : null,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CenterBadge extends StatelessWidget {
+  final MatchModel match;
+  final String label;
+
+  const _CenterBadge({required this.match, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('VS', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 12)),
+        const SizedBox(height: 4),
+        if (match.isLive) const _LiveBadge() else _BoBadge(label: label),
+      ],
+    );
+  }
+}
+
+class _BoBadge extends StatelessWidget {
+  final String label;
+
+  const _BoBadge({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(color: AppColors.chipBackground, borderRadius: BorderRadius.circular(6)),
+      child: Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
     );
   }
 }
@@ -135,7 +160,7 @@ class _LiveBadgeState extends State<_LiveBadge> with SingleTickerProviderStateMi
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: AppColors.live,
         borderRadius: BorderRadius.circular(6),
@@ -154,7 +179,7 @@ class _LiveBadgeState extends State<_LiveBadge> with SingleTickerProviderStateMi
           const SizedBox(width: 4),
           const Text(
             'EN VIVO',
-            style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+            style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -162,72 +187,38 @@ class _LiveBadgeState extends State<_LiveBadge> with SingleTickerProviderStateMi
   }
 }
 
-class _TeamRow extends StatelessWidget {
+class _TeamLogoWithScore extends StatelessWidget {
   final Team team;
-  final bool isFavorite;
-  final ValueChanged<String> onTap;
-  final int? liveScore;
+  final int? score;
 
-  const _TeamRow({required this.team, required this.isFavorite, required this.onTap, this.liveScore});
+  const _TeamLogoWithScore({required this.team, this.score});
 
   @override
   Widget build(BuildContext context) {
-    final rowContent = Row(
+    return Stack(
+      clipBehavior: Clip.none,
       children: [
-        TeamLogo(logoUrl: team.logoUrl, teamName: team.name, region: team.region, size: 24),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            team.name,
-            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (liveScore != null)
-          Container(
-            width: 26,
-            height: 22,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.live.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              '$liveScore',
-              style: const TextStyle(color: AppColors.live, fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-          )
-        else
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
-            child: Icon(
-              isFavorite ? Icons.bookmark : Icons.bookmark_border,
-              key: ValueKey(isFavorite),
-              size: 20,
-              color: isFavorite ? AppColors.accentOnDark : AppColors.textSecondary,
+        TeamLogo(logoUrl: team.logoUrl, teamName: team.name, region: team.region, size: 40),
+        if (score != null)
+          Positioned(
+            bottom: -4,
+            right: -4,
+            child: Container(
+              width: 20,
+              height: 20,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.live,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.surface, width: 2),
+              ),
+              child: Text(
+                '$score',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+              ),
             ),
           ),
       ],
-    );
-
-    if (liveScore != null) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-        child: rowContent,
-      );
-    }
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => onTap(team.id),
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-          child: rowContent,
-        ),
-      ),
     );
   }
 }
