@@ -85,9 +85,9 @@ class MatchCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                _TeamRow(team: match.teamA),
+                _TeamRow(team: match.teamA, liveScore: match.isLive ? match.liveScore?.teamAScore : null),
                 const SizedBox(height: 6),
-                _TeamRow(team: match.teamB),
+                _TeamRow(team: match.teamB, liveScore: match.isLive ? match.liveScore?.teamBScore : null),
               ],
             ),
           ),
@@ -152,8 +152,9 @@ class _LiveBadgeState extends State<_LiveBadge> with SingleTickerProviderStateMi
 
 class _TeamRow extends StatelessWidget {
   final Team team;
+  final int? liveScore;
 
-  const _TeamRow({required this.team});
+  const _TeamRow({required this.team, this.liveScore});
 
   @override
   Widget build(BuildContext context) {
@@ -170,6 +171,20 @@ class _TeamRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          if (liveScore != null)
+            Container(
+              width: 26,
+              height: 22,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.live.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                '$liveScore',
+                style: const TextStyle(color: AppColors.live, fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ),
         ],
       ),
     );
